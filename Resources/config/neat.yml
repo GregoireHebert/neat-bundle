@@ -1,0 +1,15 @@
+parameters:
+  gheb.neat.command.class: Gheb\NeatBundle\Command\NeatCommand
+  gheb.neat.mutation.class: Gheb\NeatBundle\Network\Mutation
+
+services:
+
+  gheb.neat.mutation:
+    class: "%gheb.neat.mutation.class%"
+    arguments: ["@doctrine.orm.entity_manager", "@gheb.io.aggregator.inputs", "@gheb.io.aggregator.outputs"]
+
+  gheb.neat.command:
+    class: %gheb.neat.command.class%
+    arguments: ["@gheb.io.aggregator.inputs", "@gheb.io.aggregator.outputs", "@doctrine.orm.entity_manager", "@gheb.neat.mutation"]
+    tags:
+      - { name: console.command }

@@ -1,0 +1,48 @@
+{
+    "name": "gheb/neat-bundle",
+    "description": "This Bundle can put in application a neuro evolution by augmenting topologies (NEAT)",
+    "keywords": ["neuro", "evolution", "augmenting", "topologies", "neat"],
+    "homepage": "https://github.com/GregoireHebert/neat-bundle",
+    "license": "MIT",
+    "version": "1.0.0",
+    "type": "symfony-bundle",
+    "authors": [
+        {
+            "name": "Grégoire Hébert",
+            "email": "gregoire59166@gmail.com",
+            "role": "Developer"
+        }
+    ],
+
+    "support": {
+        "email": "gregoire59166@gmail.com",
+        "issues": "https://github.com/GregoireHebert/neat-bundle/issues",
+        "source": "https://github.com/GregoireHebert/neat-bundle"
+    },
+
+    "autoload":     {
+        "psr-4": { "Gheb\\NeatBundle\\": "" }
+    },
+
+    "require": {
+        "php": ">=5.5.9",
+        "symfony/symfony": "3.*",
+        "doctrine/orm": "^2.5",
+        "doctrine/doctrine-bundle": "^1.6",
+        "doctrine/doctrine-cache-bundle": "^1.2",
+        "gheb/io-bundle": "1.0.x-dev"
+    },
+
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+
+    "config": {
+        "bin-dir": "bin"
+    },
+
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0.x-dev"
+        }
+    }
+}
