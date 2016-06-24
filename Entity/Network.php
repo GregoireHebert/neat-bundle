@@ -3,7 +3,7 @@
 namespace Gheb\NeatBundle\Network;
 
 
-use Gheb\Fish\IO\Inputs\Input;
+use Gheb\IOBundle\Inputs\AbstractInput;
 use Gheb\IOBundle\Inputs\InputsAggregator;
 use Gheb\IOBundle\Outputs\OutputsAggregator;
 
@@ -69,7 +69,7 @@ class Network
      * Receive inputs and evaluate them in function of their values
      *
      * @param Genome $genome
-     * @param Input[] $inputs
+     * @param AbstractInput[] $inputs
      * @param OutputsAggregator $outputsAggregator
      * @param InputsAggregator $inputsAggregator
      *

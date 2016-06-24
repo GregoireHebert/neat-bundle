@@ -1,4 +1,4 @@
-Gheb\NeatBundle\Network\Specie:
+Gheb\NeatBundle\Entity\Specie:
   type: entity
   table: Specie
   id:
@@ -15,13 +15,13 @@ Gheb\NeatBundle\Network\Specie:
 
   oneToMany:
     genomes:
-      targetEntity: 'Gheb\NeatBundle\Network\Genome'
+      targetEntity: 'Gheb\NeatBundle\Entity\Genome'
       cascade: ['persist', 'remove', 'refresh']
       orphanRemoval: true
       mappedBy: specie
   manyToOne:
     pool:
-      targetEntity: 'Gheb\NeatBundle\Network\Pool'
+      targetEntity: 'Gheb\NeatBundle\Entity\Pool'
       cascade: ['persist', 'remove', 'refresh']
       orphanRemoval: true
       inversedBy: species

@@ -1,2 +1,6 @@
+# Composer
+/vendor
+/bin
+
 # PhpStorm
 .idea/

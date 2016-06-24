@@ -7,11 +7,11 @@ use Gheb\IOBundle\Inputs\InputsAggregator;
 use Gheb\IOBundle\Outputs\AbstractOutput;
 use Gheb\IOBundle\Outputs\OutputsAggregator;
 use Gheb\IOBundle\Aggregator;
-use Gheb\NeatBundle\Network\Genome;
-use Gheb\NeatBundle\Network\Mutation;
-use Gheb\NeatBundle\Network\Pool;
-use Gheb\NeatBundle\Network\Specie;
-use Gheb\NeatBundle\Network\Network;
+use Gheb\NeatBundle\Entity\Genome;
+use Gheb\NeatBundle\Entity\Mutation;
+use Gheb\NeatBundle\Entity\Pool;
+use Gheb\NeatBundle\Entity\Specie;
+use Gheb\NeatBundle\Entity\Network;
 
 class Manager
 {
@@ -58,7 +58,7 @@ class Manager
         $this->outputsAggregator = $outputsAggregator;
         $this->mutation = $mutation;
 
-        $repo = $this->em->getRepository('Gheb\NeatBundle\Network\Pool');
+        $repo = $this->em->getRepository('Gheb\NeatBundle\Entity\Pool');
         $this->pool = $repo->findOneBy(array());
 
         if (!$this->pool instanceof Pool) {
@@ -92,7 +92,7 @@ class Manager
         $this->em->persist($pool);
         $this->em->flush();
 
-        $repo = $this->em->getRepository('Gheb\NeatBundle\Network\Pool');
+        $repo = $this->em->getRepository('Gheb\NeatBundle\Entity\Pool');
         $this->pool = $repo->findOneBy(array());
 
         for ($i = 0; $i < Pool::POPULATION; $i++) {

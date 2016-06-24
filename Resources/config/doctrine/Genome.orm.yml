@@ -1,4 +1,4 @@
-Gheb\NeatBundle\Network\Genome:
+Gheb\NeatBundle\Entity\Genome:
   type: entity
   table: Genome
   id:
@@ -17,14 +17,14 @@ Gheb\NeatBundle\Network\Genome:
 
   oneToMany:
     genes:
-      targetEntity: 'Gheb\NeatBundle\Network\Gene'
+      targetEntity: 'Gheb\NeatBundle\Entity\Gene'
       cascade: ['persist', 'remove', 'refresh']
       orphanRemoval: true
       mappedBy: genome
 
   manyToOne:
     specie:
-      targetEntity: 'Gheb\NeatBundle\Network\Specie'
+      targetEntity: 'Gheb\NeatBundle\Entity\Specie'
       cascade: ['persist', 'remove', 'refresh']
       orphanRemoval: true
       inversedBy: genomes
@@ -35,7 +35,7 @@ Gheb\NeatBundle\Network\Genome:
 
   manyToMany:
     network:
-      targetEntity: 'Gheb\NeatBundle\Network\Neuron'
+      targetEntity: 'Gheb\NeatBundle\Entity\Neuron'
       cascade: ['persist', 'remove', 'refresh']
       orphanRemoval: true
       joinTable:
