@@ -8,11 +8,10 @@ use Gheb\IOBundle\Inputs\InputsAggregator;
 use Gheb\NeatBundle\Entity\Genome;
 use Gheb\NeatBundle\Entity\Mutation;
 use Gheb\NeatBundle\Entity\Specie;
+use Gheb\NeatBundle\Hook;
 use Gheb\NeatBundle\Manager\Manager;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\Console\output\OutputInterface;
 
 /**

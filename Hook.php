@@ -1,6 +1,6 @@
 <?php
 
-namespace Gheb\NeatBundle\Command;
+namespace Gheb\NeatBundle;
 
 /**
  * Class Hook
