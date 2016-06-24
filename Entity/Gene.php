@@ -1,6 +1,6 @@
 <?php
 
-namespace Gheb\NeatBundle\Network;
+namespace Gheb\NeatBundle\Entity;
 
 class Gene
 {
