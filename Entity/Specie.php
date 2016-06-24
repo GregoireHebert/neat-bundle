@@ -6,16 +6,11 @@ use Doctrine\Common\Collections\ArrayCollection;
 
 /**
  * Class Species
+ *
  * @author  Grégoire Hébert <gregoire@opo.fr>
- * @package Gheb\NeatBundle\Genomes
  */
 class Specie
 {
-    /**
-     * @var int
-     */
-    public $id;
-
     /**
      * @var int
      */
@@ -25,6 +20,11 @@ class Specie
      * @var ArrayCollection
      */
     public $genomes;
+
+    /**
+     * @var int
+     */
+    public $id;
 
     /**
      * @var Pool
@@ -44,22 +44,6 @@ class Specie
     public function __construct()
     {
         $this->genomes = new ArrayCollection();
-    }
-
-    /**
-     * @return int
-     */
-    public function getId()
-    {
-        return $this->id;
-    }
-
-    /**
-     * @param int $id
-     */
-    public function setId($id)
-    {
-        $this->id = $id;
     }
 
     public function addGenome(Genome $genome)
@@ -96,6 +80,14 @@ class Specie
     public function getGenomes()
     {
         return $this->genomes;
+    }
+
+    /**
+     * @return int
+     */
+    public function getId()
+    {
+        return $this->id;
     }
 
     /**
@@ -142,6 +134,14 @@ class Specie
     public function setGenomes($genomes)
     {
         $this->genomes = $genomes;
+    }
+
+    /**
+     * @param int $id
+     */
+    public function setId($id)
+    {
+        $this->id = $id;
     }
 
     /**

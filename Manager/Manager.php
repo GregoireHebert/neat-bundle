@@ -26,14 +26,14 @@ class Manager
     private $inputsAggregator;
 
     /**
-     * @var OutputsAggregator
-     */
-    private $outputsAggregator;
-
-    /**
      * @var Mutation
      */
     private $mutation;
+
+    /**
+     * @var OutputsAggregator
+     */
+    private $outputsAggregator;
 
     /**
      * @var Pool
@@ -42,10 +42,11 @@ class Manager
 
     /**
      * Manager constructor.
+     *
      * @param EntityManager $em
-     * @param Aggregator $inputsAggregator
-     * @param Aggregator $outputsAggregator
-     * @param Mutation $mutation
+     * @param Aggregator    $inputsAggregator
+     * @param Aggregator    $outputsAggregator
+     * @param Mutation      $mutation
      */
     public function __construct(
         EntityManager $em,
@@ -53,13 +54,13 @@ class Manager
         Aggregator $outputsAggregator,
         Mutation $mutation
     ) {
-        $this->em = $em;
-        $this->inputsAggregator = $inputsAggregator;
+        $this->em                = $em;
+        $this->inputsAggregator  = $inputsAggregator;
         $this->outputsAggregator = $outputsAggregator;
-        $this->mutation = $mutation;
+        $this->mutation          = $mutation;
 
-        $repo = $this->em->getRepository('Gheb\NeatBundle\Entity\Pool');
-        $this->pool = $repo->findOneBy(array());
+        $repo       = $this->em->getRepository('Gheb\NeatBundle\Entity\Pool');
+        $this->pool = $repo->findOneBy([]);
 
         if (!$this->pool instanceof Pool) {
             $this->initializePool();
@@ -68,6 +69,33 @@ class Manager
             $this->pool->setInputAggregator($inputsAggregator);
             $this->pool->setMutation($mutation);
         }
+    }
+
+    public function applyOutputs($outputs)
+    {
+        /** @var AbstractOutput $output */
+        foreach ($outputs as $output) {
+            try {
+                $output->apply();
+            } catch (\Exception $e) {
+                var_dump($e->getMessage());
+
+                return;
+            }
+        }
+    }
+
+    public function evaluateCurrent()
+    {
+        /** @var Specie $specie */
+        /* @var Genome $genome */
+        $specie = $this->pool->getSpecies()->offsetGet($this->pool->getCurrentSpecies());
+        $genome = $specie->getGenomes()->offsetGet($this->pool->getCurrentGenome());
+
+        $inputs  = $this->inputsAggregator->aggregate->toArray();
+        $outputs = Network::evaluate($genome, $inputs, $this->outputsAggregator, $this->inputsAggregator);
+
+        $this->applyOutputs($outputs);
     }
 
     /**
@@ -86,74 +114,12 @@ class Manager
         return $genome->getFitness() != 0;
     }
 
-    public function initializePool()
-    {
-        $pool = new Pool($this->em, $this->outputsAggregator, $this->inputsAggregator, $this->mutation);
-        $this->em->persist($pool);
-        $this->em->flush();
-
-        $repo = $this->em->getRepository('Gheb\NeatBundle\Entity\Pool');
-        $this->pool = $repo->findOneBy(array());
-
-        for ($i = 0; $i < Pool::POPULATION; $i++) {
-            $this->pool->addToSpecies($this->pool->createBasicGenome());
-        }
-
-        $this->initializeRun();
-    }
-
-    public function initializeRun()
-    {
-        /** @var Specie $specie */
-        /** @var Genome $genome */
-        $specie = $this->pool->getSpecies()->offsetGet($this->pool->getCurrentSpecies());
-        $genome = $specie->getGenomes()->offsetGet($this->pool->getCurrentGenome());
-
-        Network::generateNetwork($genome, $this->outputsAggregator, $this->inputsAggregator);
-
-        $this->evaluateCurrent();
-    }
-
-    public function evaluateCurrent()
-    {
-        /** @var Specie $specie */
-        /** @var Genome $genome */
-        $specie = $this->pool->getSpecies()->offsetGet($this->pool->getCurrentSpecies());
-        $genome = $specie->getGenomes()->offsetGet($this->pool->getCurrentGenome());
-
-        $inputs  = $this->inputsAggregator->aggregate->toArray();
-        $outputs = Network::evaluate($genome, $inputs, $this->outputsAggregator, $this->inputsAggregator);
-
-        $this->applyOutputs($outputs);
-    }
-
-    public function applyOutputs($outputs)
-    {
-        /** @var AbstractOutput $output */
-        foreach ($outputs as $output) {
-            try {
-                $output->apply();
-            } catch (\Exception $e) {
-                var_dump($e->getMessage());
-                return;
-            }
-        }
-    }
-
     /**
      * @return EntityManager
      */
     public function getEm()
     {
         return $this->em;
-    }
-
-    /**
-     * @param EntityManager $em
-     */
-    public function setEm($em)
-    {
-        $this->em = $em;
     }
 
     /**
@@ -165,43 +131,11 @@ class Manager
     }
 
     /**
-     * @param InputsAggregator $inputsAggregator
-     */
-    public function setInputsAggregator($inputsAggregator)
-    {
-        $this->inputsAggregator = $inputsAggregator;
-    }
-
-    /**
      * @return Mutation
      */
     public function getMutation()
     {
         return $this->mutation;
-    }
-
-    /**
-     * @param Mutation $mutation
-     */
-    public function setMutation($mutation)
-    {
-        $this->mutation = $mutation;
-    }
-
-    /**
-     * @return Pool
-     */
-    public function getPool()
-    {
-        return $this->pool;
-    }
-
-    /**
-     * @param Pool $pool
-     */
-    public function setPool($pool)
-    {
-        $this->pool = $pool;
     }
 
     /**
@@ -213,10 +147,78 @@ class Manager
     }
 
     /**
+     * @return Pool
+     */
+    public function getPool()
+    {
+        return $this->pool;
+    }
+
+    public function initializePool()
+    {
+        $pool = new Pool($this->em, $this->outputsAggregator, $this->inputsAggregator, $this->mutation);
+        $this->em->persist($pool);
+        $this->em->flush();
+
+        $repo       = $this->em->getRepository('Gheb\NeatBundle\Entity\Pool');
+        $this->pool = $repo->findOneBy([]);
+
+        for ($i = 0; $i < Pool::POPULATION; $i++) {
+            $this->pool->addToSpecies($this->pool->createBasicGenome());
+        }
+
+        $this->initializeRun();
+    }
+
+    public function initializeRun()
+    {
+        /** @var Specie $specie */
+        /* @var Genome $genome */
+        $specie = $this->pool->getSpecies()->offsetGet($this->pool->getCurrentSpecies());
+        $genome = $specie->getGenomes()->offsetGet($this->pool->getCurrentGenome());
+
+        Network::generateNetwork($genome, $this->outputsAggregator, $this->inputsAggregator);
+
+        $this->evaluateCurrent();
+    }
+
+    /**
+     * @param EntityManager $em
+     */
+    public function setEm($em)
+    {
+        $this->em = $em;
+    }
+
+    /**
+     * @param InputsAggregator $inputsAggregator
+     */
+    public function setInputsAggregator($inputsAggregator)
+    {
+        $this->inputsAggregator = $inputsAggregator;
+    }
+
+    /**
+     * @param Mutation $mutation
+     */
+    public function setMutation($mutation)
+    {
+        $this->mutation = $mutation;
+    }
+
+    /**
      * @param OutputsAggregator $outputsAggregator
      */
     public function setOutputsAggregator($outputsAggregator)
     {
         $this->outputsAggregator = $outputsAggregator;
+    }
+
+    /**
+     * @param Pool $pool
+     */
+    public function setPool($pool)
+    {
+        $this->pool = $pool;
     }
 }

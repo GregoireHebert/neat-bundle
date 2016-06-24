@@ -2,7 +2,6 @@
 
 namespace Gheb\NeatBundle\Entity;
 
-
 use Doctrine\Common\Collections\ArrayCollection;
 
 class Neuron
@@ -15,7 +14,7 @@ class Neuron
     /**
      * @var ArrayCollection
      */
-    public $incoming ;
+    public $incoming;
 
     /**
      * @var int
@@ -33,19 +32,11 @@ class Neuron
     }
 
     /**
-     * @return mixed
+     * @param $gene
      */
-    public function getPosition()
+    public function addIncoming($gene)
     {
-        return $this->position;
-    }
-
-    /**
-     * @param mixed $position
-     */
-    public function setPosition($position)
-    {
-        $this->position = $position;
+        $this->incoming->add($gene);
     }
 
     /**
@@ -57,27 +48,35 @@ class Neuron
     }
 
     /**
-     * @param int $id
-     */
-    public function setId($id)
-    {
-        $this->id = $id;
-    }
-
-    /**
-     * @param $gene
-     */
-    public function addIncoming($gene)
-    {
-        $this->incoming->add($gene);
-    }
-
-    /**
      * @return ArrayCollection
      */
     public function getIncoming()
     {
         return $this->incoming;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getPosition()
+    {
+        return $this->position;
+    }
+
+    /**
+     * @return float
+     */
+    public function getValue()
+    {
+        return $this->value;
+    }
+
+    /**
+     * @param int $id
+     */
+    public function setId($id)
+    {
+        $this->id = $id;
     }
 
     /**
@@ -89,11 +88,11 @@ class Neuron
     }
 
     /**
-     * @return float
+     * @param mixed $position
      */
-    public function getValue()
+    public function setPosition($position)
     {
-        return $this->value;
+        $this->position = $position;
     }
 
     /**

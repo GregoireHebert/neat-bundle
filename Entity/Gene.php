@@ -5,11 +5,6 @@ namespace Gheb\NeatBundle\Entity;
 class Gene
 {
     /**
-     * @var int
-     */
-    public $id;
-
-    /**
      * @var bool
      */
     public $enabled = true;
@@ -18,6 +13,11 @@ class Gene
      * @var Genome
      */
     public $genome;
+
+    /**
+     * @var int
+     */
+    public $id;
 
     /**
      * @var int
@@ -39,20 +39,11 @@ class Gene
      */
     public $weight = 0.0;
 
-    /**
-     * @return int
-     */
-    public function getId()
+    public function __clone()
     {
-        return $this->id;
-    }
-
-    /**
-     * @param int $id
-     */
-    public function setId($id)
-    {
-        $this->id = $id;
+        if ($this->id) {
+            $this->setId(null);
+        }
     }
 
     /**
@@ -61,6 +52,14 @@ class Gene
     public function getGenome()
     {
         return $this->genome;
+    }
+
+    /**
+     * @return int
+     */
+    public function getId()
+    {
+        return $this->id;
     }
 
     /**
@@ -96,7 +95,7 @@ class Gene
     }
 
     /**
-     * @return boolean
+     * @return bool
      */
     public function isEnabled()
     {
@@ -104,7 +103,7 @@ class Gene
     }
 
     /**
-     * @param boolean $enabled
+     * @param bool $enabled
      */
     public function setEnabled($enabled)
     {
@@ -117,6 +116,14 @@ class Gene
     public function setGenome($genome)
     {
         $this->genome = $genome;
+    }
+
+    /**
+     * @param int $id
+     */
+    public function setId($id)
+    {
+        $this->id = $id;
     }
 
     /**
@@ -149,12 +156,5 @@ class Gene
     public function setWeight($weight)
     {
         $this->weight = $weight;
-    }
-
-    public function __clone()
-    {
-        if ($this->id) {
-            $this->setId(null);
-        }
     }
 }

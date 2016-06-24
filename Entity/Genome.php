@@ -9,10 +9,6 @@ class Genome
     /**
      * @var int
      */
-    public $id;
-    /**
-     * @var int
-     */
     public $fitness = 0;
 
     /**
@@ -23,22 +19,27 @@ class Genome
     /**
      * @var int
      */
+    public $globalRank = 0;
+
+    /**
+     * @var int
+     */
+    public $id;
+
+    /**
+     * @var int
+     */
     public $maxNeuron = 0;
 
     /**
      * @var array
      */
-    public $mutationRates = array();
+    public $mutationRates = [];
 
     /**
      * @var ArrayCollection
      */
     public $network;
-
-    /**
-     * @var int
-     */
-    public $globalRank = 0;
 
     /**
      * @var Specie
@@ -47,68 +48,36 @@ class Genome
 
     public function __construct()
     {
-        $this->genes = new ArrayCollection();
+        $this->genes   = new ArrayCollection();
         $this->network = new ArrayCollection();
 
-        $this->mutationRates["connections"] = 0.25;
-        $this->mutationRates["link"] = 2.0;
-        $this->mutationRates["bias"] = 0.40;
-        $this->mutationRates["node"] = 0.50;
-        $this->mutationRates["enable"] = 0.2;
-        $this->mutationRates["disable"] = 0.4;
-        $this->mutationRates["step"] = 0.1;
+        $this->mutationRates['connections'] = 0.25;
+        $this->mutationRates['link']        = 2.0;
+        $this->mutationRates['bias']        = 0.40;
+        $this->mutationRates['node']        = 0.50;
+        $this->mutationRates['enable']      = 0.2;
+        $this->mutationRates['disable']     = 0.4;
+        $this->mutationRates['step']        = 0.1;
     }
 
-    /**
-     * @param Neuron $neuron
-     */
-    public function addNeuron(Neuron $neuron)
+    public function __clone()
     {
-        $this->network->add($neuron);
-    }
+        if ($this->id) {
+            $this->setId(null);
+            $this->setFitness(0);
+            $this->setNetwork(new ArrayCollection());
+            $this->setMaxNeuron(0);
+            $this->setGlobalRank(0);
 
-    /**
-     * @param $position
-     * @return Neuron|null
-     */
-    public function getNeuron($position) {
-        $neurons = $this->network->filter(function($neuron) use ($position) {
-            /** @var Neuron $neuron */
-            return $neuron->getPosition() == $position;
-        });
-        return $neurons->first();
-    }
-
-    /**
-     * @return int
-     */
-    public function getId()
-    {
-        return $this->id;
-    }
-
-    /**
-     * @param int $id
-     */
-    public function setId($id)
-    {
-        $this->id = $id;
-    }
-
-    /**
-     * @return int
-     */
-    public function getGlobalRank()
-    {
-        return $this->globalRank;
-    }
-
-    /**
-     * @param int $globalRank
-     */
-    public function setGlobalRank($globalRank)
-    {
-        $this->globalRank = $globalRank;
+            $genesClone = new ArrayCollection();
+            foreach ($this->getGenes() as $gene) {
+                /** @var Gene $geneClone */
+                $geneClone = clone $gene;
+                $geneClone->setGenome($this);
+                $genesClone->add($geneClone);
+            }
+            $this->setGenes($genesClone);
+        }
     }
 
     /**
@@ -118,6 +87,14 @@ class Genome
     {
         $this->genes->add($gene);
         $gene->setGenome($this);
+    }
+
+    /**
+     * @param Neuron $neuron
+     */
+    public function addNeuron(Neuron $neuron)
+    {
+        $this->network->add($neuron);
     }
 
     /**
@@ -134,6 +111,22 @@ class Genome
     public function getGenes()
     {
         return $this->genes;
+    }
+
+    /**
+     * @return int
+     */
+    public function getGlobalRank()
+    {
+        return $this->globalRank;
+    }
+
+    /**
+     * @return int
+     */
+    public function getId()
+    {
+        return $this->id;
     }
 
     /**
@@ -158,6 +151,21 @@ class Genome
     public function getNetwork()
     {
         return $this->network;
+    }
+
+    /**
+     * @param $position
+     *
+     * @return Neuron|null
+     */
+    public function getNeuron($position)
+    {
+        $neurons = $this->network->filter(function ($neuron) use ($position) {
+            /* @var Neuron $neuron */
+            return $neuron->getPosition() == $position;
+        });
+
+        return $neurons->first();
     }
 
     /**
@@ -191,6 +199,22 @@ class Genome
     }
 
     /**
+     * @param int $globalRank
+     */
+    public function setGlobalRank($globalRank)
+    {
+        $this->globalRank = $globalRank;
+    }
+
+    /**
+     * @param int $id
+     */
+    public function setId($id)
+    {
+        $this->id = $id;
+    }
+
+    /**
      * @param int $maxNeuron
      */
     public function setMaxNeuron($maxNeuron)
@@ -220,24 +244,5 @@ class Genome
     public function setSpecie($specie)
     {
         $this->specie = $specie;
-    }
-
-    public function __clone() {
-        if ($this->id) {
-            $this->setId(null);
-            $this->setFitness(0);
-            $this->setNetwork(new ArrayCollection());
-            $this->setMaxNeuron(0);
-            $this->setGlobalRank(0);
-
-            $genesClone = new ArrayCollection();
-            foreach ($this->getGenes() as $gene) {
-                /** @var Gene $geneClone */
-                $geneClone = clone $gene;
-                $geneClone->setGenome($this);
-                $genesClone->add($geneClone);
-            }
-            $this->setGenes($genesClone);
-        }
     }
 }

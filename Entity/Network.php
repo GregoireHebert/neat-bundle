@@ -2,7 +2,6 @@
 
 namespace Gheb\NeatBundle\Entity;
 
-
 use Gheb\IOBundle\Inputs\AbstractInput;
 use Gheb\IOBundle\Inputs\InputsAggregator;
 use Gheb\IOBundle\Outputs\OutputsAggregator;
@@ -12,10 +11,58 @@ class Network
     const MAX_NODES = 1000000;
 
     /**
-     * Structure a network of neurons based on genes in and out
-     * @param Genome $genome
+     * Receive inputs and evaluate them in function of their values
+     *
+     * @param Genome            $genome
+     * @param AbstractInput[]   $inputs
      * @param OutputsAggregator $outputsAggregator
-     * @param InputsAggregator $inputsAggregator
+     * @param InputsAggregator  $inputsAggregator
+     *
+     * @return array|void
+     *
+     * @throws \Exception
+     */
+    public static function evaluate(Genome $genome, $inputs, OutputsAggregator $outputsAggregator, InputsAggregator $inputsAggregator)
+    {
+        if ($inputsAggregator->count() != count($inputs)) {
+            throw new \Exception('Incorrect number of neural network inputs');
+        }
+
+        for ($i = 0; $i < $inputsAggregator->count(); $i++) {
+            $genome->getNeuron($i)->setValue($inputs[$i]->getValue());
+        }
+
+        /** @var Neuron $neuron */
+        foreach ($genome->getNetwork() as $neuron) {
+            $sum = 0;
+            /** @var Gene $incoming */
+            foreach ($neuron->getIncoming() as $incoming) {
+                /** @var Neuron $other */
+                $other = $genome->getNeuron($incoming->getInto());
+                $sum += $incoming->getWeight() * $other->getValue();
+            }
+
+            if ($neuron->getIncoming()->count() > 0) {
+                $neuron->setValue(self::sigmoid($sum));
+            }
+        }
+
+        $triggeredOutputs = [];
+        for ($j = 0; $j < $outputsAggregator->count(); $j++) {
+            if ($genome->getNeuron(self::MAX_NODES + $j)->getValue() > 0) {
+                $triggeredOutputs[] = $outputsAggregator->aggregate->offsetGet($j);
+            }
+        }
+
+        return $triggeredOutputs;
+    }
+
+    /**
+     * Structure a network of neurons based on genes in and out
+     *
+     * @param Genome            $genome
+     * @param OutputsAggregator $outputsAggregator
+     * @param InputsAggregator  $inputsAggregator
      */
     public static function generateNetwork(Genome $genome, OutputsAggregator $outputsAggregator, InputsAggregator $inputsAggregator)
     {
@@ -35,8 +82,8 @@ class Network
         $iterator = $genome->getGenes()->getIterator();
         $iterator->uasort(
             function ($first, $second) {
-                /** @var Gene $first */
-                /** @var Gene $second */
+                /* @var Gene $first */
+                /* @var Gene $second */
                 return $first->getOut() < $second->getOut() ? -1 : 1;
             }
         );
@@ -66,57 +113,14 @@ class Network
     }
 
     /**
-     * Receive inputs and evaluate them in function of their values
-     *
-     * @param Genome $genome
-     * @param AbstractInput[] $inputs
-     * @param OutputsAggregator $outputsAggregator
-     * @param InputsAggregator $inputsAggregator
-     *
-     * @return array|void
-     * @throws \Exception
-     */
-    public static function evaluate(Genome $genome, $inputs, OutputsAggregator $outputsAggregator, InputsAggregator $inputsAggregator)
-    {
-        if ($inputsAggregator->count() != count($inputs)) {
-            throw new \Exception('Incorrect number of neural network inputs');
-        }
-
-        for ($i = 0; $i < $inputsAggregator->count(); $i++) {
-            $genome->getNeuron($i)->setValue($inputs[$i]->getValue());
-        }
-
-        /** @var Neuron $neuron */
-        foreach ($genome->getNetwork() as $neuron) {
-            $sum = 0;
-            /** @var Gene $incoming */
-            foreach ($neuron->getIncoming() as $incoming) {
-                /** @var Neuron $other */
-                $other = $genome->getNeuron($incoming->getInto());
-                $sum += $incoming->getWeight() * $other->getValue();
-            }
-
-            if ($neuron->getIncoming()->count() > 0) {
-                $neuron->setValue(self::sigmoid($sum));
-            }
-        }
-
-        $triggeredOutputs = array();
-        for ($j = 0; $j < $outputsAggregator->count(); $j++) {
-            if ($genome->getNeuron(self::MAX_NODES + $j)->getValue() > 0) {
-                $triggeredOutputs[] = $outputsAggregator->aggregate->offsetGet($j);
-            }
-        }
-
-        return $triggeredOutputs;
-    }
-
-    /**
      * return sigmoidal result
+     *
      * @param $x
+     *
      * @return float
      */
-    public static function sigmoid($x){
-	    return 2/(1+exp(-4.9*$x))-1;
+    public static function sigmoid($x)
+    {
+        return 2/(1+exp(-4.9*$x))-1;
     }
 }

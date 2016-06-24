@@ -8,12 +8,11 @@ use Symfony\Component\DependencyInjection\Reference;
 
 /**
  * Class HookCompilerPass
+ *
  * @author  Grégoire Hébert <gregoire@opo.fr>
- * @package Gheb\NeatBundle\DependencyInjection\Compiler
  */
 class HookCompilerPass implements CompilerPassInterface
 {
-
     /**
      * @param ContainerBuilder $container
      *
@@ -40,32 +39,32 @@ class HookCompilerPass implements CompilerPassInterface
 
         foreach ($beforeInitHooks as $beforeInitHook) {
             $hook = new Reference($beforeInitHook);
-            $neatCommand->addMethodCall('addBeforeInitHooks', array($hook));
+            $neatCommand->addMethodCall('addBeforeInitHooks', [$hook]);
         }
 
         foreach ($beforeNewRunHooks as $beforeNewRunHook) {
             $hook = new Reference($beforeNewRunHook);
-            $neatCommand->addMethodCall('addBeforeNewRunHooks', array($hook));
+            $neatCommand->addMethodCall('addBeforeNewRunHooks', [$hook]);
         }
 
         foreach ($afterEvaluationHooks as $afterEvaluationHook) {
             $hook = new Reference($afterEvaluationHook);
-            $neatCommand->addMethodCall('addAfterEvaluationHooks', array($hook));
+            $neatCommand->addMethodCall('addAfterEvaluationHooks', [$hook]);
         }
 
         foreach ($stopEvaluationHooks as $stopEvaluationHook) {
             $hook = new Reference($stopEvaluationHook);
-            $neatCommand->addMethodCall('addStopEvaluationHook', array($hook));
+            $neatCommand->addMethodCall('addStopEvaluationHook', [$hook]);
         }
 
         foreach ($getFitnessHooks as $getFitnessHook) {
             $hook = new Reference($getFitnessHook);
-            $neatCommand->addMethodCall('addGetFitnessHook', array($hook));
+            $neatCommand->addMethodCall('addGetFitnessHook', [$hook]);
         }
 
         foreach ($nextGenomeCriteriaHooks as $nextGenomeCriteriaHook) {
             $hook = new Reference($nextGenomeCriteriaHook);
-            $neatCommand->addMethodCall('addNextGenomeCriteriaHook', array($hook));
+            $neatCommand->addMethodCall('addNextGenomeCriteriaHook', [$hook]);
         }
     }
 }

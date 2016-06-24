@@ -16,20 +16,25 @@ use Symfony\Component\Console\output\OutputInterface;
 
 /**
  * Class NeatCommand
+ *
  * @author  Grégoire Hébert <gregoire@opo.fr>
- * @package Gheb\NeatBundle\Command
  */
 class NeatCommand extends ContainerAwareCommand
 {
     /**
-     * @var InputsAggregator
+     * @var Hook[]
      */
-    private $inputsAggregator;
+    private $afterEvaluationHooks = [];
 
     /**
-     * @var Aggregator
+     * @var Hook[]
      */
-    private $outputsAggregator;
+    private $beforeInitHooks = [];
+
+    /**
+     * @var Hook[]
+     */
+    private $beforeNewRunHooks = [];
 
     /**
      * @var EntityManager
@@ -37,39 +42,34 @@ class NeatCommand extends ContainerAwareCommand
     private $em;
 
     /**
-     * @var Mutation
-     */
-    private $mutation;
-
-    /**
-     * @var Hook[]
-     */
-    private $beforeInitHooks = array();
-
-    /**
-     * @var Hook[]
-     */
-    private $beforeNewRunHooks = array();
-
-    /**
-     * @var Hook[]
-     */
-    private $afterEvaluationHooks = array();
-
-    /**
-     * @var Hook
-     */
-    private $stopEvaluationHook;
-
-    /**
      * @var Hook
      */
     private $getFitnessHook;
 
     /**
+     * @var InputsAggregator
+     */
+    private $inputsAggregator;
+
+    /**
+     * @var Mutation
+     */
+    private $mutation;
+
+    /**
      * @var Hook
      */
     private $nextGenomeCriteriaHook;
+
+    /**
+     * @var Aggregator
+     */
+    private $outputsAggregator;
+
+    /**
+     * @var Hook
+     */
+    private $stopEvaluationHook;
 
     /**
      * NeatCommand constructor.
@@ -81,12 +81,42 @@ class NeatCommand extends ContainerAwareCommand
      */
     public function __construct(Aggregator $inputsAggregator, Aggregator $outputsAggregator, EntityManager $em, Mutation $mutation)
     {
-        $this->inputsAggregator = $inputsAggregator;
+        $this->inputsAggregator  = $inputsAggregator;
         $this->outputsAggregator = $outputsAggregator;
-        $this->em = $em;
-        $this->mutation = $mutation;
+        $this->em                = $em;
+        $this->mutation          = $mutation;
 
         parent::__construct();
+    }
+
+    public function addAfterEvaluationHooks(Hook $hook)
+    {
+        $this->afterEvaluationHooks[] = $hook;
+    }
+
+    public function addBeforeInitHooks(Hook $hook)
+    {
+        $this->beforeInitHooks[] = $hook;
+    }
+
+    public function addBeforeNewRunHooks(Hook $hook)
+    {
+        $this->beforeNewRunHooks[] = $hook;
+    }
+
+    public function addGetFitnessHook(Hook $hook)
+    {
+        $this->getFitnessHook = $hook;
+    }
+
+    public function addNextGenomeCriteriaHook(Hook $hook)
+    {
+        $this->nextGenomeCriteriaHook = $hook;
+    }
+
+    public function addStopEvaluationHook(Hook $hook)
+    {
+        $this->stopEvaluationHook = $hook;
     }
 
     /**
@@ -106,22 +136,22 @@ class NeatCommand extends ContainerAwareCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         // before init hooks
-        foreach ($this->beforeInitHooks as $beforeInitHook) { $beforeInitHook->hook(); }
+        foreach ($this->beforeInitHooks as $beforeInitHook) {
+            $beforeInitHook->hook();
+        }
 
         $manager = new Manager($this->em, $this->inputsAggregator, $this->outputsAggregator, $this->mutation);
         $this->em->getConnection()->getConfiguration()->setSQLLogger(null);
 
         while ($this->stopEvaluationHook instanceof Hook ? $this->stopEvaluationHook->hook() : true) {
-
             $pool = $manager->getPool();
 
             /** @var Specie $specie */
-            /** @var Genome $genome */
+            /* @var Genome $genome */
             $specie = $pool->getSpecies()->offsetGet($pool->getCurrentSpecies());
             $genome = $specie->getGenomes()->offsetGet($pool->getCurrentGenome());
 
             if ($this->nextGenomeCriteriaHook->hook()) {
-
                 $fitness = $this->getFitnessHook->hook();
                 $genome->setFitness($fitness);
 
@@ -139,7 +169,9 @@ class NeatCommand extends ContainerAwareCommand
                 $this->em->flush();
 
                 // before new run hooks
-                foreach ($this->beforeNewRunHooks as $beforeNewRunHook) { $beforeNewRunHook->hook(); }
+                foreach ($this->beforeNewRunHooks as $beforeNewRunHook) {
+                    $beforeNewRunHook->hook();
+                }
 
                 $manager->initializeRun();
             } else {
@@ -147,38 +179,9 @@ class NeatCommand extends ContainerAwareCommand
             }
 
             // after evaluation hooks
-            foreach ($this->afterEvaluationHooks as $afterEvaluationHook) { $afterEvaluationHook->hook(); }
+            foreach ($this->afterEvaluationHooks as $afterEvaluationHook) {
+                $afterEvaluationHook->hook();
+            }
         }
     }
-
-    public function addBeforeInitHooks(Hook $hook)
-    {
-        $this->beforeInitHooks[] = $hook;
-    }
-
-    public function addBeforeNewRunHooks(Hook $hook)
-    {
-        $this->beforeNewRunHooks[] = $hook;
-    }
-
-    public function addAfterEvaluationHooks(Hook $hook)
-    {
-        $this->afterEvaluationHooks[] = $hook;
-    }
-
-    public function addStopEvaluationHook(Hook $hook)
-    {
-        $this->stopEvaluationHook = $hook;
-    }
-
-    public function addGetFitnessHook(Hook $hook)
-    {
-        $this->getFitnessHook = $hook;
-    }
-
-    public function addNextGenomeCriteriaHook(Hook $hook)
-    {
-        $this->nextGenomeCriteriaHook = $hook;
-    }
-
 }

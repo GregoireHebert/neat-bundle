@@ -9,21 +9,15 @@ use Gheb\IOBundle\Aggregator;
 
 /**
  * Class Pool regroups every species
- * @package Gheb\NeatBundle\Genomes
  */
 class Pool
 {
     const CROSSOVER_CHANCE = 0.75;
-    const STALE_SPECIES = 15;
-    const POPULATION = 300;
-    const DELTA_DISJOINT = 2.0;
-    const DELTA_WEIGHT = 0.4;
-    const DELTA_THRESHOLD = 1.0;
-
-    /**
-     * @var int
-     */
-    public $id;
+    const STALE_SPECIES    = 15;
+    const POPULATION       = 300;
+    const DELTA_DISJOINT   = 2.0;
+    const DELTA_WEIGHT     = 0.4;
+    const DELTA_THRESHOLD  = 1.0;
 
     /**
      * @var int
@@ -44,6 +38,11 @@ class Pool
      * @var int
      */
     public $generation = 0;
+
+    /**
+     * @var int
+     */
+    public $id;
 
     /**
      * @var int
@@ -80,32 +79,17 @@ class Pool
      */
     public function __construct(EntityManager $em, Aggregator $outputsAggregator, Aggregator $inputsAggregator, Mutation $mutation)
     {
-        $this->em = $em;
-        $this->innovation = $outputsAggregator->count();
+        $this->em              = $em;
+        $this->innovation      = $outputsAggregator->count();
         $this->inputAggregator = $inputsAggregator;
-        $this->mutation = $mutation;
+        $this->mutation        = $mutation;
 
         $this->species = new ArrayCollection();
     }
 
     /**
-     * @return int
-     */
-    public function getId()
-    {
-        return $this->id;
-    }
-
-    /**
-     * @param int $id
-     */
-    public function setId($id)
-    {
-        $this->id = $id;
-    }
-
-    /**
      * Add a specie to the pool
+     *
      * @param Specie $specie
      */
     public function addSpecie(Specie $specie)
@@ -116,6 +100,7 @@ class Pool
 
     /**
      * Add a genome to a specie. If it does not belong to any existing specie according to it's weight and evolution number, create a new specie.
+     *
      * @param Genome $child
      */
     public function addToSpecies(Genome $child)
@@ -150,11 +135,11 @@ class Pool
     public function breedChild(Specie $specie)
     {
         if (lcg_value() < self::CROSSOVER_CHANCE) {
-            $g1 = $specie->genomes->offsetGet(mt_rand(1, $specie->genomes->count())-1);
-            $g2 = $specie->genomes->offsetGet(mt_rand(1, $specie->genomes->count())-1);
+            $g1    = $specie->genomes->offsetGet(mt_rand(1, $specie->genomes->count())-1);
+            $g2    = $specie->genomes->offsetGet(mt_rand(1, $specie->genomes->count())-1);
             $child = $this->mutation->crossOver($g1, $g2);
         } else {
-            $g = $specie->genomes->offsetGet(mt_rand(1, $specie->genomes->count())-1);
+            $g     = $specie->genomes->offsetGet(mt_rand(1, $specie->genomes->count())-1);
             $child = $this->mutation->cloneEntity($g);
         }
 
@@ -167,6 +152,7 @@ class Pool
      * Create a Genome and set it's maxNeuron to the amount of inputs +1 and then applies a first mutation
      *
      * @use Mutation::mutate
+     *
      * @return Genome
      */
     public function createBasicGenome()
@@ -180,46 +166,28 @@ class Pool
     }
 
     /**
-     * Tries to get to the next genome. If we passed the number of genome available, we try a new specie.
-     * If we passed the number of species available, create a new generation.
-     */
-    public function nextGenome()
-    {
-        $this->currentGenome++;
-
-        if ($this->currentGenome > $this->species->offsetGet($this->currentSpecies)->getGenomes()->count()-1) {
-            $this->currentGenome = 0;
-            $this->currentSpecies++;
-            if ($this->currentSpecies > $this->species->count()-1) {
-                $this->newGeneration();
-                $this->currentSpecies = 0;
-            }
-        }
-    }
-
-    /**
      * Remove the lower fitness half genomes of each specie or keep only the highest fitness genome of each specie.
+     *
      * @param bool $cutToOne
      */
     public function cullSpecies($cutToOne = false)
     {
         /** @var Specie $specie */
         foreach ($this->species as &$specie) {
-
             $iterator = $specie->getGenomes()->getIterator();
 
             // order from lower to higher
             $iterator->uasort(
                 function ($first, $second) {
-                    /** @var Genome $first */
-                    /** @var Genome $second */
+                    /* @var Genome $first */
+                    /* @var Genome $second */
                     return $first->getFitness() < $second->getFitness() ? -1 : 1;
                 }
             );
 
-            $remaining = $cutToOne ? 1 : ceil($specie->getGenomes()->count() / 2);
+            $remaining        = $cutToOne ? 1 : ceil($specie->getGenomes()->count() / 2);
             $remainingGenomes = new ArrayCollection();
-            $genomes = iterator_to_array($iterator, true);
+            $genomes          = iterator_to_array($iterator, true);
             while (count($genomes) >= $remaining) {
                 // get the highest
                 $remainingGenomes->add(array_pop($genomes));
@@ -242,13 +210,13 @@ class Pool
     {
         $disjointGenes = 0;
 
-        $innovation1 = array();
+        $innovation1 = [];
         /** @var Gene $gene */
         foreach ($g1->getGenes() as $gene) {
             $innovation1[] = $gene->getInnovation();
         }
 
-        $innovation2 = array();
+        $innovation2 = [];
         /** @var Gene $gene */
         foreach ($g2->getGenes() as $gene) {
             $innovation2[] = $gene->getInnovation();
@@ -301,6 +269,14 @@ class Pool
     public function getGeneration()
     {
         return $this->generation;
+    }
+
+    /**
+     * @return int
+     */
+    public function getId()
+    {
+        return $this->id;
     }
 
     /**
@@ -368,7 +344,7 @@ class Pool
         // Remove all species having a fitness lower than the average
         $this->removeWeakSpecies();
 
-        $sum = $this->totalAverageFitness();
+        $sum      = $this->totalAverageFitness();
         $children = new ArrayCollection();
 
         // for each specie, if it average fitness is higher than the global population,
@@ -392,7 +368,7 @@ class Pool
             $children->add($this->breedChild($specie));
         }
 
-        /** @var Genome $child */
+/** @var Genome $child */
         // we re-dispatch the new children through all the existing species (or new thanks to mutations)
         foreach ($children as $child) {
             $this->addToSpecies($child);
@@ -403,12 +379,32 @@ class Pool
 
     /**
      * Up innovation number of 1 and returns it
+     *
      * @return int
      */
     public function newInnovation()
     {
         $this->innovation++;
+
         return $this->innovation;
+    }
+
+    /**
+     * Tries to get to the next genome. If we passed the number of genome available, we try a new specie.
+     * If we passed the number of species available, create a new generation.
+     */
+    public function nextGenome()
+    {
+        $this->currentGenome++;
+
+        if ($this->currentGenome > $this->species->offsetGet($this->currentSpecies)->getGenomes()->count()-1) {
+            $this->currentGenome = 0;
+            $this->currentSpecies++;
+            if ($this->currentSpecies > $this->species->count()-1) {
+                $this->newGeneration();
+                $this->currentSpecies = 0;
+            }
+        }
     }
 
     /**
@@ -418,8 +414,8 @@ class Pool
     {
         $global = new ArrayCollection();
 
-        /**
-         * @var Specie $specie
+        /*
+         * @var Specie
          */
         foreach ($this->species as $specie) {
             foreach ($specie->getGenomes() as $genome) {
@@ -431,8 +427,8 @@ class Pool
         // from lower to higher, because higher rank is better
         $iterator->uasort(
             function ($first, $second) {
-                /** @var Genome $first */
-                /** @var Genome $second */
+                /* @var Genome $first */
+                /* @var Genome $second */
                 return $first->getFitness() < $second->getFitness() ? -1 : 1;
             }
         );
@@ -455,7 +451,7 @@ class Pool
     public function removeStaleSpecies()
     {
         /**
-         * @var int    $key
+         * @var int
          * @var Specie $specie
          */
         foreach ($this->species as $key => $specie) {
@@ -464,8 +460,8 @@ class Pool
             // from higher to lower
             $iterator->uasort(
                 function ($first, $second) {
-                    /** @var Genome $first */
-                    /** @var Genome $second */
+                    /* @var Genome $first */
+                    /* @var Genome $second */
                     return $first->getFitness() > $second->getFitness() ? -1 : 1;
                 }
             );
@@ -562,6 +558,14 @@ class Pool
     }
 
     /**
+     * @param int $id
+     */
+    public function setId($id)
+    {
+        $this->id = $id;
+    }
+
+    /**
      * @param int $innovation
      */
     public function setInnovation($innovation)
@@ -603,6 +607,7 @@ class Pool
 
     /**
      * Return the sum of species average fitness
+     *
      * @return int
      */
     public function totalAverageFitness()
@@ -618,6 +623,7 @@ class Pool
 
     /**
      * Return the weight difference between two genomes
+     *
      * @param Genome $g1
      * @param Genome $g2
      *
@@ -625,7 +631,7 @@ class Pool
      */
     public function weight(Genome $g1, Genome $g2)
     {
-        $innovation = array();
+        $innovation = [];
 
         /** @var Gene $gene */
         /** @var Gene $gene2 */
@@ -633,7 +639,7 @@ class Pool
             $innovation[$gene->getInnovation()] = $gene;
         }
 
-        $sum = 0;
+        $sum        = 0;
         $coincident = 0;
 
         foreach ($g1->getGenes() as $gene) {

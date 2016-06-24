@@ -20,19 +20,21 @@ class Mutation
 
     /**
      * Manager constructor.
-     * @param EntityManager $em
-     * @param InputsAggregator $inputsAggregator
+     *
+     * @param EntityManager     $em
+     * @param InputsAggregator  $inputsAggregator
      * @param OutputsAggregator $outputsAggregator
      */
     public function __construct(EntityManager $em, InputsAggregator $inputsAggregator, OutputsAggregator $outputsAggregator)
     {
-        $this->em = $em;
-        $this->inputsAggregator = $inputsAggregator;
+        $this->em                = $em;
+        $this->inputsAggregator  = $inputsAggregator;
         $this->outputsAggregator = $outputsAggregator;
     }
 
     /**
      * Clone an entity and persist it
+     *
      * @param $entity
      *
      * @return mixed
@@ -47,6 +49,7 @@ class Mutation
 
     /**
      * Create a new genome based on two genomes
+     *
      * @param Genome $g1
      * @param Genome $g2
      *
@@ -56,13 +59,13 @@ class Mutation
     {
         if ($g2->getFitness() > $g1->getFitness()) {
             $temp = $g1;
-            $g1 = $g2;
-            $g2 = $temp;
+            $g1   = $g2;
+            $g2   = $temp;
         }
 
         $child = new Genome();
 
-        $newInnovation = array();
+        $newInnovation = [];
         /** @var Gene $gene */
         foreach ($g2->getGenes() as $gene) {
             $newInnovation[$gene->getInnovation()] = $gene;
@@ -74,7 +77,7 @@ class Mutation
         foreach ($g1->getGenes() as $gene) {
             /** @var Gene $gene2 */
             $gene2 = isset($newInnovation[$gene->getInnovation()]) ? $newInnovation[$gene->getInnovation()] : null;
-            if ($gene2 != null && mt_rand(1,2) == 1 && $gene2->isEnabled()) {
+            if ($gene2 != null && mt_rand(1, 2) == 1 && $gene2->isEnabled()) {
                 $child->addGene($this->cloneEntity($gene2));
             } else {
                 $child->addGene($this->cloneEntity($gene));
@@ -89,12 +92,15 @@ class Mutation
 
     /**
      * Transform an enable gene to a disable one
+     *
      * @param Genome $genome
-     * @param bool $enabled //chances are to change enabled one to disabled when true, and to change disabled one to enabled when false
+     * @param bool   $enabled //chances are to change enabled one to disabled when true, and to change disabled one to enabled when false
      */
     public function enableDisableMutate(Genome $genome, $enabled = true)
     {
-        if ($genome->getGenes()->count() == 0) return;
+        if ($genome->getGenes()->count() == 0) {
+            return;
+        }
 
         $candidates = new ArrayCollection();
 
@@ -105,14 +111,17 @@ class Mutation
             }
         }
 
-        if ($candidates->count() == 0) return;
+        if ($candidates->count() == 0) {
+            return;
+        }
 
-        $gene = $candidates->get(mt_rand(1,$candidates->count())-1);
+        $gene = $candidates->get(mt_rand(1, $candidates->count())-1);
         $gene->setEnabled(!$gene->isEnabled());
     }
 
     /**
      * Return a random neuron. A neuron can be an input, an output or an hidden node
+     *
      * @param      $genes
      * @param bool $nonInput
      *
@@ -120,7 +129,7 @@ class Mutation
      */
     public function getRandomNeuron($genes, $nonInput = false)
     {
-        $neurons = array();
+        $neurons = [];
         if (!$nonInput) {
             for ($i = 0; $i < $this->inputsAggregator->count(); $i++) {
                 $neurons[$i] = $i;
@@ -142,7 +151,7 @@ class Mutation
             }
         }
 
-        $r = mt_rand(1,count($neurons)) -1;
+        $r = mt_rand(1, count($neurons)) -1;
         $n = array_values($neurons);
 
         return $n[$r];
@@ -151,6 +160,7 @@ class Mutation
     /**
      * Has a chance to create a new gene in between two random in and out genes
      * or a chance to create a new link from a bias to the output
+     *
      * @param Genome $genome
      * @param        $forceBias
      */
@@ -179,8 +189,8 @@ class Mutation
             $newLink->setInto($this->inputsAggregator->count());
         }
 
-        $exists = $genome->getGenes()->filter(function ($gene) use ($newLink){
-            /** @var Gene $gene */
+        $exists = $genome->getGenes()->filter(function ($gene) use ($newLink) {
+            /* @var Gene $gene */
             return $gene->getInto() == $newLink->getInto() && $gene->getOut() == $newLink->getOut();
         });
 
@@ -199,16 +209,16 @@ class Mutation
      * Applies a mutation upon a genome
      *
      * @param Genome $genome
-     * @param Pool $pool pool to innovate, when the genome hasn't been attached to it yet
+     * @param Pool   $pool   pool to innovate, when the genome hasn't been attached to it yet
      */
     public function mutate(Genome $genome, $pool = null)
     {
         $this->pool = $pool;
-        $rates = $genome->mutationRates;
+        $rates      = $genome->mutationRates;
 
         // has a chance to reduce the mutation rate or rise it up
         foreach ($rates as $mutation=>$rate) {
-            if (mt_rand(1,2) == 1) {
+            if (mt_rand(1, 2) == 1) {
                 $genome->mutationRates[$mutation] = 0.95*$rate;
             } else {
                 $genome->mutationRates[$mutation] = 1.05263*$rate;
@@ -275,17 +285,21 @@ class Mutation
      */
     public function nodeMutate(Genome $genome)
     {
-        if ($genome->getGenes()->count() == 0) return;
+        if ($genome->getGenes()->count() == 0) {
+            return;
+        }
 
         $genome->setMaxNeuron($genome->getMaxNeuron()+1);
 
         /** @var Gene $gene */
         $gene = $genome->getGenes()->get(mt_rand(1, $genome->getGenes()->count())-1);
-        if ($gene->isEnabled() == false) return;
+        if ($gene->isEnabled() == false) {
+            return;
+        }
 
         $gene->setEnabled(false);
 
-        $pool = $this->pool instanceof Pool ? $this->pool : $gene->getGenome()->getSpecie()->getPool();
+        $pool  = $this->pool instanceof Pool ? $this->pool : $gene->getGenome()->getSpecie()->getPool();
         $clone = clone $gene;
 
         $clone->setOut($genome->getMaxNeuron());
