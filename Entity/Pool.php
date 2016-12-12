@@ -320,6 +320,19 @@ class Pool
     }
 
     /**
+     * @return mixed
+     */
+    public function getBestGenome() {
+        /** @var Specie $specie */
+        $specie = $this->species->filter(function($specie){
+            /** @var Specie $specie */
+            return $specie->getTopFitness() == $this->getMaxFitness();
+        })->first();
+
+        return $specie->getBestGenome();
+    }
+
+    /**
      * Create a all new generation
      */
     public function newGeneration()
@@ -368,7 +381,7 @@ class Pool
             $children->add($this->breedChild($specie));
         }
 
-/** @var Genome $child */
+        /** @var Genome $child */
         // we re-dispatch the new children through all the existing species (or new thanks to mutations)
         foreach ($children as $child) {
             $this->addToSpecies($child);
@@ -636,7 +649,7 @@ class Pool
         /** @var Gene $gene */
         /** @var Gene $gene2 */
         foreach ($g2->getGenes() as $gene) {
-            $innovation[$gene->getInnovation()] = $gene;
+            $innovation[$gene->getInnovation()] = $gene->getWeight();
         }
 
         $sum        = 0;
@@ -644,8 +657,7 @@ class Pool
 
         foreach ($g1->getGenes() as $gene) {
             if (isset($innovation[$gene->getInnovation()])) {
-                $gene2 = $innovation[$gene->getInnovation()];
-                $sum += abs($gene->getWeight() - $gene2->getWeight());
+                $sum += abs($gene->getWeight() - $innovation[$gene->getInnovation()]);
                 $coincident++;
             }
         }

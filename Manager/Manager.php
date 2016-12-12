@@ -98,6 +98,15 @@ class Manager
         $this->applyOutputs($outputs);
     }
 
+    public function evaluateBest(){
+        $genome = $this->pool->getBestGenome();
+
+        $inputs  = $this->inputsAggregator->aggregate->toArray();
+        $outputs = Network::evaluate($genome, $inputs, $this->outputsAggregator, $this->inputsAggregator);
+
+        $this->applyOutputs($outputs);
+    }
+
     /**
      * Return either a genome fitness has been measured or not
      *

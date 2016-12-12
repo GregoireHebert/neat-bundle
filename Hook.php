@@ -12,6 +12,7 @@ abstract class Hook
     /**
      * Function called by the NeatCommand
      *
+     * @todo change for invoke method
      * @return mixed
      */
     public function hook()

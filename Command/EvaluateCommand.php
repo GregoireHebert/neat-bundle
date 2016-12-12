@@ -125,8 +125,8 @@ class NeatCommand extends ContainerAwareCommand
     protected function configure()
     {
         $this
-            ->setName('gheb:neat:run')
-            ->setDescription('execute neat');
+            ->setName('gheb:neat:evaluate')
+            ->setDescription('execute neat to evaluate best genome network');
     }
 
     /**
@@ -144,39 +144,7 @@ class NeatCommand extends ContainerAwareCommand
         $this->em->getConnection()->getConfiguration()->setSQLLogger(null);
 
         while ($this->stopEvaluationHook instanceof Hook ? $this->stopEvaluationHook->hook() : true) {
-            $pool = $manager->getPool();
-
-            /** @var Specie $specie */
-            /* @var Genome $genome */
-            $specie = $pool->getSpecies()->offsetGet($pool->getCurrentSpecies());
-            $genome = $specie->getGenomes()->offsetGet($pool->getCurrentGenome());
-
-            if ($this->nextGenomeCriteriaHook->hook()) {
-                $fitness = $this->getFitnessHook->hook();
-                $genome->setFitness($fitness);
-
-                if ($fitness > $pool->getMaxFitness()) {
-                    $pool->setMaxFitness($fitness);
-                }
-
-                $pool->setCurrentSpecies(0);
-                $pool->setCurrentGenome(0);
-
-                while ($manager->fitnessAlreadyMeasured()) {
-                    $pool->nextGenome();
-                }
-
-                $this->em->flush();
-
-                // before new run hooks
-                foreach ($this->beforeNewRunHooks as $beforeNewRunHook) {
-                    $beforeNewRunHook->hook();
-                }
-
-                $manager->initializeRun();
-            } else {
-                $manager->evaluateCurrent();
-            }
+            $manager->evaluateBest();
 
             // after evaluation hooks
             foreach ($this->afterEvaluationHooks as $afterEvaluationHook) {
