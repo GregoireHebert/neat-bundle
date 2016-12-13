@@ -59,7 +59,7 @@ class Manager
         $this->outputsAggregator = $outputsAggregator;
         $this->mutation          = $mutation;
 
-        $repo       = $this->em->getRepository('Gheb\NeatBundle\Entity\Pool');
+        $repo       = $this->em->getRepository('NeatBundle:Pool');
         $this->pool = $repo->findOneBy([]);
 
         if (!$this->pool instanceof Pool) {
@@ -169,7 +169,7 @@ class Manager
         $this->em->persist($pool);
         $this->em->flush();
 
-        $repo       = $this->em->getRepository('Gheb\NeatBundle\Entity\Pool');
+        $repo       = $this->em->getRepository('NeatBundle:Pool');
         $this->pool = $repo->findOneBy([]);
 
         for ($i = 0; $i < Pool::POPULATION; $i++) {

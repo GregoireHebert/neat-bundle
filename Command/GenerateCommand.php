@@ -143,7 +143,7 @@ class GenerateCommand extends ContainerAwareCommand
         $manager = new Manager($this->em, $this->inputsAggregator, $this->outputsAggregator, $this->mutation);
         $this->em->getConnection()->getConfiguration()->setSQLLogger(null);
 
-        while ($this->stopEvaluationHook instanceof Hook ? $this->stopEvaluationHook() : true) {
+        while ($this->stopEvaluationHook instanceof Hook ? ($this->stopEvaluationHook)() : true) {
             $pool = $manager->getPool();
 
             /** @var Specie $specie */
@@ -151,8 +151,8 @@ class GenerateCommand extends ContainerAwareCommand
             $specie = $pool->getSpecies()->offsetGet($pool->getCurrentSpecies());
             $genome = $specie->getGenomes()->offsetGet($pool->getCurrentGenome());
 
-            if ($this->nextGenomeCriteriaHook()) {
-                $fitness = $this->getFitnessHook();
+            if (($this->nextGenomeCriteriaHook)()) {
+                $fitness = ($this->getFitnessHook)();
                 $genome->setFitness($fitness);
 
                 if ($pool->getMaxFitness() < $fitness) {
