@@ -1,4 +1,4 @@
-Gheb\NeatBundle\Entity\Gene:
+Gheb\NeatBundle\Neat\Gene:
   type: entity
   table: Gene
   id:
@@ -23,7 +23,7 @@ Gheb\NeatBundle\Entity\Gene:
 
   manyToOne:
     genome:
-      targetEntity: 'Gheb\NeatBundle\Entity\Genome'
+      targetEntity: 'Gheb\NeatBundle\Neat\Genome'
       cascade: ['persist', 'remove', 'refresh']
       orphanRemoval: true
       inversedBy: genes

@@ -7,11 +7,11 @@ use Gheb\IOBundle\Inputs\InputsAggregator;
 use Gheb\IOBundle\Outputs\AbstractOutput;
 use Gheb\IOBundle\Outputs\OutputsAggregator;
 use Gheb\IOBundle\Aggregator;
-use Gheb\NeatBundle\Entity\Genome;
-use Gheb\NeatBundle\Entity\Mutation;
-use Gheb\NeatBundle\Entity\Pool;
-use Gheb\NeatBundle\Entity\Specie;
-use Gheb\NeatBundle\Entity\Network;
+use Gheb\NeatBundle\Neat\Genome;
+use Gheb\NeatBundle\Neat\Mutation;
+use Gheb\NeatBundle\Neat\Pool;
+use Gheb\NeatBundle\Neat\Specie;
+use Gheb\NeatBundle\Neat\Network;
 
 class Manager
 {

@@ -119,10 +119,9 @@ namespace Acme\DemoBundle\Neat;
 
 use Gheb\NeatBundle\Hook;
 
-class myHook extends Hook
+class myHook implements Hook
 {
-
-    public function hook()
+    public function __invoke()
     {
         // logic part
     }

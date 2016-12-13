@@ -5,9 +5,9 @@ namespace Gheb\NeatBundle\Command;
 use Doctrine\ORM\EntityManager;
 use Gheb\IOBundle\Aggregator;
 use Gheb\IOBundle\Inputs\InputsAggregator;
-use Gheb\NeatBundle\Entity\Genome;
-use Gheb\NeatBundle\Entity\Mutation;
-use Gheb\NeatBundle\Entity\Specie;
+use Gheb\NeatBundle\Neat\Genome;
+use Gheb\NeatBundle\Neat\Mutation;
+use Gheb\NeatBundle\Neat\Specie;
 use Gheb\NeatBundle\Hook;
 use Gheb\NeatBundle\Manager\Manager;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
@@ -137,18 +137,18 @@ class NeatCommand extends ContainerAwareCommand
     {
         // before init hooks
         foreach ($this->beforeInitHooks as $beforeInitHook) {
-            $beforeInitHook->hook();
+            $beforeInitHook();
         }
 
         $manager = new Manager($this->em, $this->inputsAggregator, $this->outputsAggregator, $this->mutation);
         $this->em->getConnection()->getConfiguration()->setSQLLogger(null);
 
-        while ($this->stopEvaluationHook instanceof Hook ? $this->stopEvaluationHook->hook() : true) {
+        while ($this->stopEvaluationHook instanceof Hook ? $this->stopEvaluationHook() : true) {
             $manager->evaluateBest();
 
             // after evaluation hooks
             foreach ($this->afterEvaluationHooks as $afterEvaluationHook) {
-                $afterEvaluationHook->hook();
+                $afterEvaluationHook();
             }
         }
     }

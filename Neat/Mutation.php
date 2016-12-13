@@ -1,6 +1,6 @@
 <?php
 
-namespace Gheb\NeatBundle\Entity;
+namespace Gheb\NeatBundle\Neat;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManager;

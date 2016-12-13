@@ -1,6 +1,6 @@
 <?php
 
-namespace Gheb\NeatBundle\Entity;
+namespace Gheb\NeatBundle\Neat;
 
 use Gheb\IOBundle\Inputs\AbstractInput;
 use Gheb\IOBundle\Inputs\InputsAggregator;

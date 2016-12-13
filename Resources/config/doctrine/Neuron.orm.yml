@@ -1,4 +1,4 @@
-Gheb\NeatBundle\Entity\Neuron:
+Gheb\NeatBundle\Neat\Neuron:
   type: entity
   table: Neuron
   id:
@@ -15,7 +15,7 @@ Gheb\NeatBundle\Entity\Neuron:
 
   manyToMany:
     incoming:
-      targetEntity: 'Gheb\NeatBundle\Entity\Gene'
+      targetEntity: 'Gheb\NeatBundle\Neat\Gene'
       cascade: ['persist', 'remove', 'refresh']
       orphanRemoval: true
       joinTable:
