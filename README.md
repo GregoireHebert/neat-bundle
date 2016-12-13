@@ -183,6 +183,4 @@ But i do not have the use for the moment. I will add them later, or please feel 
 
 ## TODO
 
-* Add a method returning the best genome
-* Add a method evaluating only with the best genome
 * Add UnitTests
