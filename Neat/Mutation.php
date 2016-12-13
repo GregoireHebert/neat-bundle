@@ -42,7 +42,7 @@ class Mutation
     public function cloneEntity($entity)
     {
         $clone = clone $entity;
-        $this->em->clear($clone);
+        $this->em->detach($clone);
 
         return $clone;
     }
