@@ -1,5 +1,6 @@
 parameters:
-  gheb.neat.command.class: Gheb\NeatBundle\Command\NeatCommand
+  gheb.neat.evaluate.command.class: Gheb\NeatBundle\Command\EvaluateCommand
+  gheb.neat.generate.command.class: Gheb\NeatBundle\Command\GenerateCommand
   gheb.neat.mutation.class: Gheb\NeatBundle\Neat\Mutation
 
 services:
@@ -8,8 +9,14 @@ services:
     class: "%gheb.neat.mutation.class%"
     arguments: ["@doctrine.orm.entity_manager", "@gheb.io.aggregator.inputs", "@gheb.io.aggregator.outputs"]
 
-  gheb.neat.command:
-    class: %gheb.neat.command.class%
+  gheb.evaluate.command:
+    class: %gheb.neat.evaluate.command.class%
+    arguments: ["@gheb.io.aggregator.inputs", "@gheb.io.aggregator.outputs", "@doctrine.orm.entity_manager", "@gheb.neat.mutation"]
+    tags:
+      - { name: console.command }
+
+  gheb.generate.command:
+    class: %gheb.neat.generate.command.class%
     arguments: ["@gheb.io.aggregator.inputs", "@gheb.io.aggregator.outputs", "@doctrine.orm.entity_manager", "@gheb.neat.mutation"]
     tags:
       - { name: console.command }

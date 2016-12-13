@@ -19,7 +19,7 @@ use Symfony\Component\Console\output\OutputInterface;
  *
  * @author  Grégoire Hébert <gregoire@opo.fr>
  */
-class NeatCommand extends ContainerAwareCommand
+class GenerateCommand extends ContainerAwareCommand
 {
     /**
      * @var Hook[]

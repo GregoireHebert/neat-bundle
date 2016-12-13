@@ -5,12 +5,10 @@ namespace Gheb\NeatBundle\Command;
 use Doctrine\ORM\EntityManager;
 use Gheb\IOBundle\Aggregator;
 use Gheb\IOBundle\Inputs\InputsAggregator;
-use Gheb\NeatBundle\Neat\Genome;
 use Gheb\NeatBundle\Neat\Mutation;
-use Gheb\NeatBundle\Neat\Specie;
 use Gheb\NeatBundle\Hook;
 use Gheb\NeatBundle\Manager\Manager;
-use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\output\OutputInterface;
 
@@ -19,7 +17,7 @@ use Symfony\Component\Console\output\OutputInterface;
  *
  * @author  Grégoire Hébert <gregoire@opo.fr>
  */
-class NeatCommand extends ContainerAwareCommand
+class EvaluateCommand extends Command
 {
     /**
      * @var Hook[]
