@@ -20,7 +20,7 @@ class HookCompilerPass implements CompilerPassInterface
      */
     public function process(ContainerBuilder $container)
     {
-        $neatCommand = $container->getDefinition('gheb.neat.command');
+        $neatCommand = $container->getDefinition('gheb.neat.generate.command');
 
         $beforeInitHooks         = array_keys($container->findTaggedServiceIds('gheb.neat.hook.onBeforeInit'));
         $beforeNewRunHooks       = array_keys($container->findTaggedServiceIds('gheb.neat.hook.onBeforeNewRun'));
