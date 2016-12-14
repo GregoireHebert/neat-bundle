@@ -30,7 +30,8 @@
         "doctrine/orm": "^2.5",
         "doctrine/doctrine-bundle": "^1.6",
         "doctrine/doctrine-cache-bundle": "^1.2",
-        "gheb/io-bundle": "1.0.x-dev"
+        "gheb/io-bundle": "1.0.x-dev",
+        "gos/web-socket-bundle": "^1.8"
     },
 
     "minimum-stability": "dev",

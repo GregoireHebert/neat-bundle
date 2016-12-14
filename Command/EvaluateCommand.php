@@ -133,15 +133,10 @@ class EvaluateCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        // before init hooks
-        foreach ($this->beforeInitHooks as $beforeInitHook) {
-            $beforeInitHook();
-        }
-
         $manager = new Manager($this->em, $this->inputsAggregator, $this->outputsAggregator, $this->mutation);
         $this->em->getConnection()->getConfiguration()->setSQLLogger(null);
 
-        while ($this->stopEvaluationHook instanceof Hook ? $this->stopEvaluationHook() : true) {
+        if ($this->stopEvaluationHook instanceof Hook ? $this->stopEvaluationHook() : true) {
             $manager->evaluateBest();
 
             // after evaluation hooks

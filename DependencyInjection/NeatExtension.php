@@ -25,5 +25,6 @@ class NeatExtension extends Extension
         $locator = new FileLocator(__DIR__ . '/../Resources/config');
         $loader  = new YamlFileLoader($container, $locator);
         $loader->load('neat.yml');
+        $loader->load('websocket.yml');
     }
 }
