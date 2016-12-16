@@ -1,4 +1,4 @@
-output:
+output_application:
     channel: output/application
     handler:
         callback: 'output.application' #related to the getName() of your topic

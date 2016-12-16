@@ -21,6 +21,7 @@ class HookCompilerPass implements CompilerPassInterface
     public function process(ContainerBuilder $container)
     {
         $neatCommand = $container->getDefinition('gheb.neat.generate.command');
+        $evalCommand = $container->getDefinition('gheb.neat.evaluate.command');
 
         $beforeInitHooks         = array_keys($container->findTaggedServiceIds('gheb.neat.hook.onBeforeInit'));
         $beforeNewRunHooks       = array_keys($container->findTaggedServiceIds('gheb.neat.hook.onBeforeNewRun'));
@@ -50,11 +51,13 @@ class HookCompilerPass implements CompilerPassInterface
         foreach ($afterEvaluationHooks as $afterEvaluationHook) {
             $hook = new Reference($afterEvaluationHook);
             $neatCommand->addMethodCall('addAfterEvaluationHooks', [$hook]);
+            $evalCommand->addMethodCall('addAfterEvaluationHooks', [$hook]);
         }
 
         foreach ($stopEvaluationHooks as $stopEvaluationHook) {
             $hook = new Reference($stopEvaluationHook);
             $neatCommand->addMethodCall('addStopEvaluationHook', [$hook]);
+            $evalCommand->addMethodCall('addStopEvaluationHook', [$hook]);
         }
 
         foreach ($getFitnessHooks as $getFitnessHook) {
