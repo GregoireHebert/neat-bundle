@@ -1,4 +1,4 @@
 gheb.neat.ws.output_application:
-    class: Gheb\NeatBundle\Manager\Manager
+    class: Gheb\NeatBundle\Topic\OutputTopic
     tags:
         - { name: gos_web_socket.topic }

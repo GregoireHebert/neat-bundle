@@ -12,12 +12,9 @@ use Gheb\NeatBundle\Neat\Mutation;
 use Gheb\NeatBundle\Neat\Pool;
 use Gheb\NeatBundle\Neat\Specie;
 use Gheb\NeatBundle\Neat\Network;
-use Gos\Bundle\WebSocketBundle\Router\WampRequest;
-use Gos\Bundle\WebSocketBundle\Topic\TopicInterface;
-use Ratchet\ConnectionInterface;
-use Ratchet\Wamp\Topic;
+use Gos\Bundle\WebSocketBundle\DataCollector\PusherDecorator;
 
-final class Manager implements TopicInterface
+class Manager
 {
     /**
      * @var EntityManager
@@ -40,9 +37,9 @@ final class Manager implements TopicInterface
      */
     private $pool;
     /**
-     * @var Topic
+     * @var PusherDecorator
      */
-    private $topic;
+    private $pusher;
 
     /**
      * Manager constructor.
@@ -51,13 +48,15 @@ final class Manager implements TopicInterface
      * @param Aggregator    $inputsAggregator
      * @param Aggregator    $outputsAggregator
      * @param Mutation      $mutation
+     * @param PusherDecorator   $pusher
      */
-    public function __construct(EntityManager $em, Aggregator $inputsAggregator, Aggregator $outputsAggregator, Mutation $mutation)
+    public function __construct(EntityManager $em, Aggregator $inputsAggregator, Aggregator $outputsAggregator, Mutation $mutation, $pusher = null)
     {
         $this->em                = $em;
         $this->inputsAggregator  = $inputsAggregator;
         $this->outputsAggregator = $outputsAggregator;
         $this->mutation          = $mutation;
+        $this->pusher            = $pusher;
 
         $repo       = $this->em->getRepository('NeatBundle:Pool');
         $this->pool = $repo->findOneBy([]);
@@ -126,26 +125,6 @@ final class Manager implements TopicInterface
         }
     }
 
-    public function onSubscribe(ConnectionInterface $connection, Topic $topic, WampRequest $request)
-    {
-        $this->topic = $topic;
-    }
-
-    public function onUnSubscribe(ConnectionInterface $connection, Topic $topic, WampRequest $request)
-    {
-        $this->topic = null;
-    }
-
-    public function onPublish(ConnectionInterface $connection, Topic $topic, WampRequest $request, $event, array $exclude, array $eligible)
-    {
-
-    }
-
-    public function getName()
-    {
-        return 'output.application';
-    }
-
     public function evaluateBest()
     {
         $genome = $this->pool->getBestGenome();
@@ -155,7 +134,7 @@ final class Manager implements TopicInterface
 
         foreach ($outputs as $output) {
             /** @var AbstractOutput $output */
-            $this->topic->broadcast(['outputName' => $output->getName()]);
+            $this->pusher->push(['outputName' => $output->getName()], 'output_application', ['username' => 'user1']);
         }
 
         $this->applyOutputs($outputs);

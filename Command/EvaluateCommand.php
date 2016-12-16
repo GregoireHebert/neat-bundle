@@ -8,6 +8,7 @@ use Gheb\IOBundle\Inputs\InputsAggregator;
 use Gheb\NeatBundle\Neat\Mutation;
 use Gheb\NeatBundle\Hook;
 use Gheb\NeatBundle\Manager\Manager;
+use Gos\Bundle\WebSocketBundle\DataCollector\PusherDecorator;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\output\OutputInterface;
@@ -70,19 +71,26 @@ class EvaluateCommand extends Command
     private $stopEvaluationHook;
 
     /**
+     * @var PusherDecorator
+     */
+    private $pusher;
+
+    /**
      * NeatCommand constructor.
      *
      * @param Aggregator    $inputsAggregator
      * @param Aggregator    $outputsAggregator
      * @param EntityManager $em
      * @param Mutation      $mutation
+     * @param PusherDecorator $pusher
      */
-    public function __construct(Aggregator $inputsAggregator, Aggregator $outputsAggregator, EntityManager $em, Mutation $mutation)
+    public function __construct(Aggregator $inputsAggregator, Aggregator $outputsAggregator, EntityManager $em, Mutation $mutation, $pusher)
     {
         $this->inputsAggregator  = $inputsAggregator;
         $this->outputsAggregator = $outputsAggregator;
         $this->em                = $em;
         $this->mutation          = $mutation;
+        $this->pusher            = $pusher;
 
         parent::__construct();
     }
@@ -133,7 +141,7 @@ class EvaluateCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $manager = new Manager($this->em, $this->inputsAggregator, $this->outputsAggregator, $this->mutation);
+        $manager = new Manager($this->em, $this->inputsAggregator, $this->outputsAggregator, $this->mutation, $this->pusher);
         $this->em->getConnection()->getConfiguration()->setSQLLogger(null);
 
         if ($this->stopEvaluationHook instanceof Hook ? $this->stopEvaluationHook() : true) {
