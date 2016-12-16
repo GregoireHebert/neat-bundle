@@ -322,8 +322,7 @@ class Pool
      */
     public function getBestGenome() {
         /** @var Specie $specie */
-        $specie = $this->species->filter(function($specie){
-            /** @var Specie $specie */
+        $specie = $this->species->filter(function(Specie $specie){
             return $specie->getTopFitness() == $this->getMaxFitness();
         })->first();
 
