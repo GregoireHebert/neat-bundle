@@ -77,7 +77,7 @@ class Mutation
         foreach ($g1->getGenes() as $gene) {
             /** @var Gene $gene2 */
             $gene2 = isset($newInnovation[$gene->getInnovation()]) ? $newInnovation[$gene->getInnovation()] : null;
-            if (null != $gene2 && mt_rand(1, 2) == 1 && $gene2->isEnabled()) {
+            if (null !== $gene2 && mt_rand(1, 2) == 1 && true === $gene2->isEnabled()) {
                 $child->addGene($this->cloneEntity($gene2));
             } else {
                 $child->addGene($this->cloneEntity($gene));
@@ -131,12 +131,14 @@ class Mutation
     {
         $neurons = [];
         if (!$nonInput) {
-            for ($i = 0; $i < $this->inputsAggregator->count(); $i++) {
+            $inputsCount = $this->inputsAggregator->count();
+            for ($i = 0; $i < $inputsCount; $i++) {
                 $neurons[$i] = $i;
             }
         }
 
-        for ($j = 0; $j < $this->outputsAggregator->count(); $j++) {
+        $outputCount = $this->outputsAggregator->count();
+        for ($j = 0; $j < $outputCount; $j++) {
             $neurons[Network::MAX_NODES+$j] = Network::MAX_NODES+$j;
         }
 
@@ -189,8 +191,7 @@ class Mutation
             $newLink->setInto($this->inputsAggregator->count());
         }
 
-        $exists = $genome->getGenes()->filter(function ($gene) use ($newLink) {
-            /* @var Gene $gene */
+        $exists = $genome->getGenes()->filter(function (Gene $gene) use ($newLink) {
             return $gene->getInto() == $newLink->getInto() && $gene->getOut() == $newLink->getOut();
         });
 
@@ -293,7 +294,7 @@ class Mutation
 
         /** @var Gene $gene */
         $gene = $genome->getGenes()->get(mt_rand(1, $genome->getGenes()->count())-1);
-        if ($gene->isEnabled() == false) {
+        if ($gene->isEnabled() === false) {
             return;
         }
 

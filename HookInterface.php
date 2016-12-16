@@ -3,11 +3,11 @@
 namespace Gheb\NeatBundle;
 
 /**
- * Class Hook
+ * Interface HookInterface
  *
  * @author  Grégoire Hébert <gregoire@opo.fr>
  */
-interface Hook
+interface HookInterface
 {
     public function __invoke();
 }

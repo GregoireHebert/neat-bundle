@@ -178,9 +178,7 @@ class Pool
 
             // order from lower to higher
             $iterator->uasort(
-                function ($first, $second) {
-                    /* @var Genome $first */
-                    /* @var Genome $second */
+                function (Genome $first, Genome $second) {
                     return $first->getFitness() < $second->getFitness() ? -1 : 1;
                 }
             );
@@ -439,9 +437,7 @@ class Pool
         $iterator = $global->getIterator();
         // from lower to higher, because higher rank is better
         $iterator->uasort(
-            function ($first, $second) {
-                /* @var Genome $first */
-                /* @var Genome $second */
+            function (Genome $first, Genome $second) {
                 return $first->getFitness() < $second->getFitness() ? -1 : 1;
             }
         );
@@ -472,9 +468,7 @@ class Pool
 
             // from higher to lower
             $iterator->uasort(
-                function ($first, $second) {
-                    /* @var Genome $first */
-                    /* @var Genome $second */
+                function (Genome $first, Genome $second) {
                     return $first->getFitness() > $second->getFitness() ? -1 : 1;
                 }
             );
@@ -664,6 +658,6 @@ class Pool
 
         // on php7 a division by zero (forced) returns INF Or before that, it returned false.
         // if INF is always > to any number, false is not.
-        return (@($sum/$coincident) === false) ? (($sum < 0) ? -INF : (($sum == 0) ? NAN : INF)) : @($sum/$coincident);
+        return (0 === $coincident) ? (($sum < 0) ? -INF : (($sum == 0) ? NAN : INF)) : $sum/$coincident;
     }
 }

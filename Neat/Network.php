@@ -18,7 +18,7 @@ class Network
      * @param OutputsAggregator $outputsAggregator
      * @param InputsAggregator  $inputsAggregator
      *
-     * @return array|void
+     * @return array
      *
      * @throws \Exception
      */
@@ -28,7 +28,8 @@ class Network
             throw new \Exception('Incorrect number of neural network inputs');
         }
 
-        for ($i = 0; $i < $inputsAggregator->count(); $i++) {
+        $inputCount = $inputsAggregator->count();
+        for ($i = 0; $i < $inputCount; $i++) {
             $genome->getNeuron($i)->setValue($inputs[$i]->getValue());
         }
 
@@ -48,7 +49,8 @@ class Network
         }
 
         $triggeredOutputs = [];
-        for ($j = 0; $j < $outputsAggregator->count(); $j++) {
+        $outputCount = $outputsAggregator->count();
+        for ($j = 0; $j < $outputCount; $j++) {
             if ($genome->getNeuron(self::MAX_NODES + $j)->getValue() > 0) {
                 $triggeredOutputs[] = $outputsAggregator->aggregate->offsetGet($j);
             }
@@ -66,13 +68,15 @@ class Network
      */
     public static function generateNetwork(Genome $genome, OutputsAggregator $outputsAggregator, InputsAggregator $inputsAggregator)
     {
-        for ($i = 0; $i < $inputsAggregator->count(); $i++) {
+        $inputCount = $inputsAggregator->count();
+        for ($i = 0; $i < $inputCount; $i++) {
             $neuron = new Neuron();
             $neuron->setPosition($i);
             $genome->addNeuron($neuron);
         }
 
-        for ($j = 0; $j < $outputsAggregator->count(); $j++) {
+        $outputCount = $outputsAggregator->count();
+        for ($j = 0; $j < $outputCount; $j++) {
             $neuron = new Neuron();
             $neuron->setPosition(self::MAX_NODES + $j);
             $genome->addNeuron($neuron);
@@ -81,19 +85,18 @@ class Network
         // from lower to higher
         $iterator = $genome->getGenes()->getIterator();
         $iterator->uasort(
-            function ($first, $second) {
-                /* @var Gene $first */
-                /* @var Gene $second */
+            function (Gene $first, Gene $second) {
                 return $first->getOut() < $second->getOut() ? -1 : 1;
             }
         );
 
-        for ($i = 0; $i < $iterator->count(); $i++) {
+        $iteratorCount = $iterator->count();
+        for ($i = 0; $i < $iteratorCount; $i++) {
             /** @var Gene $gene */
             $gene = $iterator->offsetGet($i);
 
             if ($gene->isEnabled()) {
-                if (null == $genome->getNeuron($gene->getOut())) {
+                if (null === $genome->getNeuron($gene->getOut())) {
                     $neuron = new Neuron();
                     $neuron->setPosition($gene->getOut());
                     $genome->addNeuron($neuron);
@@ -103,7 +106,7 @@ class Network
                 $neuron = $genome->getNeuron($gene->getOut());
                 $neuron->incoming->add($gene);
 
-                if (null == $genome->getNeuron($gene->getInto())) {
+                if (null === $genome->getNeuron($gene->getInto())) {
                     $neuron = new Neuron();
                     $neuron->setPosition($gene->getInto());
                     $genome->addNeuron($neuron);

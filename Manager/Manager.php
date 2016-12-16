@@ -118,8 +118,6 @@ class Manager
             try {
                 $output->apply();
             } catch (\Exception $e) {
-                var_dump($e->getMessage());
-
                 return;
             }
         }

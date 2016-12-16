@@ -160,8 +160,7 @@ class Genome
      */
     public function getNeuron($position)
     {
-        return $this->network->filter(function ($neuron) use ($position) {
-            /* @var Neuron $neuron */
+        return $this->network->filter(function (Neuron $neuron) use ($position) {
             return $neuron->getPosition() == $position;
         })->first();
     }

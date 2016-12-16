@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "a8d04f345f82c4613282ea313a4ea690",
-    "content-hash": "f12214e596178eef0e5afb362476d0ce",
+    "hash": "00e98243a1b765730472a0835477358e",
+    "content-hash": "643140dae04869fa27455b0c1cb6d3a8",
     "packages": [
         {
             "name": "doctrine/annotations",
@@ -827,12 +827,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/GregoireHebert/io-bundle.git",
-                "reference": "3cc7ff46f9079d50db6fb162573e1e69af92746f"
+                "reference": "6205dc165090bb62826253228763d375f875bd64"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/GregoireHebert/io-bundle/zipball/3cc7ff46f9079d50db6fb162573e1e69af92746f",
-                "reference": "3cc7ff46f9079d50db6fb162573e1e69af92746f",
+                "url": "https://api.github.com/repos/GregoireHebert/io-bundle/zipball/6205dc165090bb62826253228763d375f875bd64",
+                "reference": "6205dc165090bb62826253228763d375f875bd64",
                 "shasum": ""
             },
             "require": {
@@ -873,7 +873,7 @@
                 "neuroevolution",
                 "topologies"
             ],
-            "time": "2016-06-23 14:33:43"
+            "time": "2016-12-13 07:12:06"
         },
         {
             "name": "gos/pnctl-event-loop-emitter",

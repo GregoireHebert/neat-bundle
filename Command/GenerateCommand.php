@@ -8,7 +8,7 @@ use Gheb\IOBundle\Inputs\InputsAggregator;
 use Gheb\NeatBundle\Neat\Genome;
 use Gheb\NeatBundle\Neat\Mutation;
 use Gheb\NeatBundle\Neat\Specie;
-use Gheb\NeatBundle\Hook;
+use Gheb\NeatBundle\HookInterface;
 use Gheb\NeatBundle\Manager\Manager;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
@@ -22,17 +22,17 @@ use Symfony\Component\Console\output\OutputInterface;
 class GenerateCommand extends ContainerAwareCommand
 {
     /**
-     * @var Hook[]
+     * @var HookInterface[]
      */
     private $afterEvaluationHooks = [];
 
     /**
-     * @var Hook[]
+     * @var HookInterface[]
      */
     private $beforeInitHooks = [];
 
     /**
-     * @var Hook[]
+     * @var HookInterface[]
      */
     private $beforeNewRunHooks = [];
 
@@ -42,7 +42,7 @@ class GenerateCommand extends ContainerAwareCommand
     private $em;
 
     /**
-     * @var Hook
+     * @var HookInterface
      */
     private $getFitnessHook;
 
@@ -57,7 +57,7 @@ class GenerateCommand extends ContainerAwareCommand
     private $mutation;
 
     /**
-     * @var Hook
+     * @var HookInterface
      */
     private $nextGenomeCriteriaHook;
 
@@ -67,7 +67,7 @@ class GenerateCommand extends ContainerAwareCommand
     private $outputsAggregator;
 
     /**
-     * @var Hook
+     * @var HookInterface
      */
     private $stopEvaluationHook;
 
@@ -89,32 +89,32 @@ class GenerateCommand extends ContainerAwareCommand
         parent::__construct();
     }
 
-    public function addAfterEvaluationHooks(Hook $hook)
+    public function addAfterEvaluationHooks(HookInterface $hook)
     {
         $this->afterEvaluationHooks[] = $hook;
     }
 
-    public function addBeforeInitHooks(Hook $hook)
+    public function addBeforeInitHooks(HookInterface $hook)
     {
         $this->beforeInitHooks[] = $hook;
     }
 
-    public function addBeforeNewRunHooks(Hook $hook)
+    public function addBeforeNewRunHooks(HookInterface $hook)
     {
         $this->beforeNewRunHooks[] = $hook;
     }
 
-    public function addGetFitnessHook(Hook $hook)
+    public function addGetFitnessHook(HookInterface $hook)
     {
         $this->getFitnessHook = $hook;
     }
 
-    public function addNextGenomeCriteriaHook(Hook $hook)
+    public function addNextGenomeCriteriaHook(HookInterface $hook)
     {
         $this->nextGenomeCriteriaHook = $hook;
     }
 
-    public function addStopEvaluationHook(Hook $hook)
+    public function addStopEvaluationHook(HookInterface $hook)
     {
         $this->stopEvaluationHook = $hook;
     }
@@ -143,7 +143,7 @@ class GenerateCommand extends ContainerAwareCommand
         $manager = new Manager($this->em, $this->inputsAggregator, $this->outputsAggregator, $this->mutation);
         $this->em->getConnection()->getConfiguration()->setSQLLogger(null);
 
-        while ($this->stopEvaluationHook instanceof Hook ? ($this->stopEvaluationHook)() : true) {
+        while ($this->stopEvaluationHook instanceof HookInterface ? ($this->stopEvaluationHook)() : true) {
             $pool = $manager->getPool();
 
             /** @var Specie $specie */
@@ -165,8 +165,6 @@ class GenerateCommand extends ContainerAwareCommand
                 while ($manager->fitnessAlreadyMeasured()) {
                     $pool->nextGenome();
                 }
-
-                $this->em->flush();
 
                 // before new run hooks
                 foreach ($this->beforeNewRunHooks as $beforeNewRunHook) {

@@ -184,3 +184,4 @@ But i do not have the use for the moment. I will add them later, or please feel 
 ## TODO
 
 * Add UnitTests
+* prioritize outputs applications ??

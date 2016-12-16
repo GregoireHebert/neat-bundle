@@ -84,8 +84,7 @@ class Specie
 
     public function getBestGenome() {
         /** var Genome $genome */
-        return $this->getGenomes()->filter(function($genome){
-            /** var Genome $genome */
+        return $this->getGenomes()->filter(function(Genome $genome){
             return $genome->getFitness() == $this->getTopFitness();
         })->first();
     }

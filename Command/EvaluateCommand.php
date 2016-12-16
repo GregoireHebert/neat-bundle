@@ -6,7 +6,7 @@ use Doctrine\ORM\EntityManager;
 use Gheb\IOBundle\Aggregator;
 use Gheb\IOBundle\Inputs\InputsAggregator;
 use Gheb\NeatBundle\Neat\Mutation;
-use Gheb\NeatBundle\Hook;
+use Gheb\NeatBundle\HookInterface;
 use Gheb\NeatBundle\Manager\Manager;
 use Gos\Bundle\WebSocketBundle\DataCollector\PusherDecorator;
 use Symfony\Component\Console\Command\Command;
@@ -21,29 +21,14 @@ use Symfony\Component\Console\output\OutputInterface;
 class EvaluateCommand extends Command
 {
     /**
-     * @var Hook[]
+     * @var HookInterface[]
      */
     private $afterEvaluationHooks = [];
-
-    /**
-     * @var Hook[]
-     */
-    private $beforeInitHooks = [];
-
-    /**
-     * @var Hook[]
-     */
-    private $beforeNewRunHooks = [];
 
     /**
      * @var EntityManager
      */
     private $em;
-
-    /**
-     * @var Hook
-     */
-    private $getFitnessHook;
 
     /**
      * @var InputsAggregator
@@ -56,17 +41,12 @@ class EvaluateCommand extends Command
     private $mutation;
 
     /**
-     * @var Hook
-     */
-    private $nextGenomeCriteriaHook;
-
-    /**
      * @var Aggregator
      */
     private $outputsAggregator;
 
     /**
-     * @var Hook
+     * @var HookInterface
      */
     private $stopEvaluationHook;
 
@@ -95,32 +75,12 @@ class EvaluateCommand extends Command
         parent::__construct();
     }
 
-    public function addAfterEvaluationHooks(Hook $hook)
+    public function addAfterEvaluationHooks(HookInterface $hook)
     {
         $this->afterEvaluationHooks[] = $hook;
     }
 
-    public function addBeforeInitHooks(Hook $hook)
-    {
-        $this->beforeInitHooks[] = $hook;
-    }
-
-    public function addBeforeNewRunHooks(Hook $hook)
-    {
-        $this->beforeNewRunHooks[] = $hook;
-    }
-
-    public function addGetFitnessHook(Hook $hook)
-    {
-        $this->getFitnessHook = $hook;
-    }
-
-    public function addNextGenomeCriteriaHook(Hook $hook)
-    {
-        $this->nextGenomeCriteriaHook = $hook;
-    }
-
-    public function addStopEvaluationHook(Hook $hook)
+    public function addStopEvaluationHook(HookInterface $hook)
     {
         $this->stopEvaluationHook = $hook;
     }
@@ -138,13 +98,14 @@ class EvaluateCommand extends Command
     /**
      * @param InputInterface  $input
      * @param OutputInterface $output
+     * @return void
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $manager = new Manager($this->em, $this->inputsAggregator, $this->outputsAggregator, $this->mutation, $this->pusher);
         $this->em->getConnection()->getConfiguration()->setSQLLogger(null);
 
-        if ($this->stopEvaluationHook instanceof Hook ? $this->stopEvaluationHook() : true) {
+        if ($this->stopEvaluationHook instanceof HookInterface ? ($this->stopEvaluationHook)() : true) {
             $manager->evaluateBest();
 
             // after evaluation hooks

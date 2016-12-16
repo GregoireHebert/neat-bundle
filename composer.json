@@ -4,7 +4,6 @@
     "keywords": ["neuro", "evolution", "augmenting", "topologies", "neat"],
     "homepage": "https://github.com/GregoireHebert/neat-bundle",
     "license": "MIT",
-    "version": "1.0.0",
     "type": "symfony-bundle",
     "authors": [
         {

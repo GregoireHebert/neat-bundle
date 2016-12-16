@@ -34,7 +34,7 @@ class OutputTopic implements TopicInterface, PushableTopicInterface
      * @param array $eligible
      */
     public function broadcast($msg, array $exclude = array(), array $eligible = array()){
-        if (null != $this->topic) {
+        if (null !== $this->topic) {
             $this->topic->broadcast($msg, $exclude, $eligible);
         }
     }
