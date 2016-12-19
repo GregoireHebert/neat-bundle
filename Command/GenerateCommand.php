@@ -3,7 +3,7 @@
 namespace Gheb\NeatBundle\Command;
 
 use Doctrine\ORM\EntityManager;
-use Gheb\IOBundle\Inputs\Aggregator;
+use Gheb\IOBundle\Aggregator \Aggregator;
 use Gheb\NeatBundle\Neat\Genome;
 use Gheb\NeatBundle\Neat\Mutation;
 use Gheb\NeatBundle\Neat\Specie;
