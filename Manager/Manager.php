@@ -3,10 +3,8 @@
 namespace Gheb\NeatBundle\Manager;
 
 use Doctrine\ORM\EntityManager;
-use Gheb\IOBundle\Inputs\InputsAggregator;
+use Gheb\IOBundle\Aggregator\Aggregator ;
 use Gheb\IOBundle\Outputs\AbstractOutput;
-use Gheb\IOBundle\Outputs\OutputsAggregator;
-use Gheb\IOBundle\Aggregator;
 use Gheb\NeatBundle\Neat\Genome;
 use Gheb\NeatBundle\Neat\Mutation;
 use Gheb\NeatBundle\Neat\Pool;
@@ -21,7 +19,7 @@ class Manager
      */
     private $em;
     /**
-     * @var InputsAggregator
+     * @var Aggregator
      */
     private $inputsAggregator;
     /**
@@ -29,7 +27,7 @@ class Manager
      */
     private $mutation;
     /**
-     * @var OutputsAggregator
+     * @var Aggregator
      */
     private $outputsAggregator;
     /**
@@ -118,6 +116,8 @@ class Manager
             try {
                 $output->apply();
             } catch (\Exception $e) {
+                var_dump($e->getMessage());
+
                 return;
             }
         }
@@ -171,7 +171,7 @@ class Manager
     }
 
     /**
-     * @return InputsAggregator
+     * @return Aggregator
      */
     public function getInputsAggregator()
     {
@@ -179,7 +179,7 @@ class Manager
     }
 
     /**
-     * @param InputsAggregator $inputsAggregator
+     * @param Aggregator  $inputsAggregator
      */
     public function setInputsAggregator($inputsAggregator)
     {
@@ -203,7 +203,7 @@ class Manager
     }
 
     /**
-     * @return OutputsAggregator
+     * @return Aggregator
      */
     public function getOutputsAggregator()
     {
@@ -211,7 +211,7 @@ class Manager
     }
 
     /**
-     * @param OutputsAggregator $outputsAggregator
+     * @param Aggregator  $outputsAggregator
      */
     public function setOutputsAggregator($outputsAggregator)
     {

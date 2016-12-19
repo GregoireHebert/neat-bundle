@@ -3,8 +3,7 @@
 namespace Gheb\NeatBundle\Neat;
 
 use Gheb\IOBundle\Inputs\AbstractInput;
-use Gheb\IOBundle\Inputs\InputsAggregator;
-use Gheb\IOBundle\Outputs\OutputsAggregator;
+use Gheb\IOBundle\Aggregator\Aggregator ;
 
 class Network
 {
@@ -15,14 +14,14 @@ class Network
      *
      * @param Genome            $genome
      * @param AbstractInput[]   $inputs
-     * @param OutputsAggregator $outputsAggregator
-     * @param InputsAggregator  $inputsAggregator
+     * @param Aggregator  $outputsAggregator
+     * @param Aggregator   $inputsAggregator
      *
      * @return array
      *
      * @throws \Exception
      */
-    public static function evaluate(Genome $genome, $inputs, OutputsAggregator $outputsAggregator, InputsAggregator $inputsAggregator)
+    public static function evaluate(Genome $genome, $inputs, Aggregator  $outputsAggregator, Aggregator  $inputsAggregator)
     {
         if ($inputsAggregator->count() != count($inputs)) {
             throw new \Exception('Incorrect number of neural network inputs');
@@ -63,10 +62,10 @@ class Network
      * Structure a network of neurons based on genes in and out
      *
      * @param Genome            $genome
-     * @param OutputsAggregator $outputsAggregator
-     * @param InputsAggregator  $inputsAggregator
+     * @param Aggregator  $outputsAggregator
+     * @param Aggregator   $inputsAggregator
      */
-    public static function generateNetwork(Genome $genome, OutputsAggregator $outputsAggregator, InputsAggregator $inputsAggregator)
+    public static function generateNetwork(Genome $genome, Aggregator  $outputsAggregator, Aggregator  $inputsAggregator)
     {
         $inputCount = $inputsAggregator->count();
         for ($i = 0; $i < $inputCount; $i++) {

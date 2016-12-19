@@ -4,8 +4,7 @@ namespace Gheb\NeatBundle\Neat;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManager;
-use Gheb\IOBundle\Inputs\InputsAggregator;
-use Gheb\IOBundle\Outputs\OutputsAggregator;
+use Gheb\IOBundle\Aggregator\Aggregator ;
 
 class Mutation
 {
@@ -22,10 +21,10 @@ class Mutation
      * Manager constructor.
      *
      * @param EntityManager     $em
-     * @param InputsAggregator  $inputsAggregator
-     * @param OutputsAggregator $outputsAggregator
+     * @param Aggregator   $inputsAggregator
+     * @param Aggregator  $outputsAggregator
      */
-    public function __construct(EntityManager $em, InputsAggregator $inputsAggregator, OutputsAggregator $outputsAggregator)
+    public function __construct(EntityManager $em, Aggregator  $inputsAggregator, Aggregator  $outputsAggregator)
     {
         $this->em                = $em;
         $this->inputsAggregator  = $inputsAggregator;

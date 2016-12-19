@@ -4,8 +4,7 @@ namespace Gheb\NeatBundle\Neat;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManager;
-use Gheb\IOBundle\Inputs\InputsAggregator;
-use Gheb\IOBundle\Aggregator;
+use Gheb\IOBundle\Aggregator\Aggregator;
 
 /**
  * Class Pool regroups every species
@@ -50,7 +49,7 @@ class Pool
     public $innovation = 0;
 
     /**
-     * @var InputsAggregator
+     * @var Aggregator
      */
     private $inputAggregator;
 
@@ -286,7 +285,7 @@ class Pool
     }
 
     /**
-     * @return InputsAggregator
+     * @return Aggregator
      */
     public function getInputAggregator()
     {

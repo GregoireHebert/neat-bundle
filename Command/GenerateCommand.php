@@ -3,8 +3,7 @@
 namespace Gheb\NeatBundle\Command;
 
 use Doctrine\ORM\EntityManager;
-use Gheb\IOBundle\Aggregator;
-use Gheb\IOBundle\Inputs\InputsAggregator;
+use Gheb\IOBundle\Inputs\Aggregator;
 use Gheb\NeatBundle\Neat\Genome;
 use Gheb\NeatBundle\Neat\Mutation;
 use Gheb\NeatBundle\Neat\Specie;
@@ -47,7 +46,7 @@ class GenerateCommand extends ContainerAwareCommand
     private $getFitnessHook;
 
     /**
-     * @var InputsAggregator
+     * @var Aggregator
      */
     private $inputsAggregator;
 

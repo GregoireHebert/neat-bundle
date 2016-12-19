@@ -3,8 +3,7 @@
 namespace Gheb\NeatBundle\Command;
 
 use Doctrine\ORM\EntityManager;
-use Gheb\IOBundle\Aggregator;
-use Gheb\IOBundle\Inputs\InputsAggregator;
+use Gheb\IOBundle\Aggregator\Aggregator;
 use Gheb\NeatBundle\Neat\Mutation;
 use Gheb\NeatBundle\HookInterface;
 use Gheb\NeatBundle\Manager\Manager;
@@ -31,7 +30,7 @@ class EvaluateCommand extends Command
     private $em;
 
     /**
-     * @var InputsAggregator
+     * @var Aggregator
      */
     private $inputsAggregator;
 
