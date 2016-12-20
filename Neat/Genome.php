@@ -156,7 +156,7 @@ class Genome
     /**
      * @param $position
      *
-     * @return Neuron|null
+     * @return Neuron|False
      */
     public function getNeuron($position)
     {

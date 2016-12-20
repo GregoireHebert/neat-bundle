@@ -59,6 +59,11 @@ class Pool
     public $maxFitness = 0;
 
     /**
+     * @var int
+     */
+    private $maxInputs;
+
+    /**
      * @var Mutation
      */
     public $mutation;
@@ -80,6 +85,7 @@ class Pool
     {
         $this->em              = $em;
         $this->innovation      = $outputsAggregator->count();
+        $this->maxInputs       = $inputsAggregator->count();
         $this->inputAggregator = $inputsAggregator;
         $this->mutation        = $mutation;
 
@@ -158,7 +164,7 @@ class Pool
     {
         $genome = new Genome();
 
-        $genome->setMaxNeuron($this->inputAggregator->count() + 1);
+        $genome->setMaxNeuron($this->maxInputs + 1);
         $this->mutation->mutate($genome, $this);
 
         return $genome;

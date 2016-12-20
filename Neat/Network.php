@@ -85,7 +85,7 @@ class Network
         $iterator = $genome->getGenes()->getIterator();
         $iterator->uasort(
             function (Gene $first, Gene $second) {
-                return $first->getOut() < $second->getOut() ? -1 : 1;
+                return (int)$first->getOut() < (int)$second->getOut() ? -1 : 1;
             }
         );
 
@@ -95,17 +95,17 @@ class Network
             $gene = $iterator->offsetGet($i);
 
             if ($gene->isEnabled()) {
-                if (null === $genome->getNeuron($gene->getOut())) {
+                $neuron = $genome->getNeuron($gene->getOut());
+
+                if (!($neuron instanceof Neuron)) {
                     $neuron = new Neuron();
                     $neuron->setPosition($gene->getOut());
                     $genome->addNeuron($neuron);
                 }
 
-                /** @var Neuron $neuron */
-                $neuron = $genome->getNeuron($gene->getOut());
                 $neuron->incoming->add($gene);
 
-                if (null === $genome->getNeuron($gene->getInto())) {
+                if (false === $genome->getNeuron($gene->getInto())) {
                     $neuron = new Neuron();
                     $neuron->setPosition($gene->getInto());
                     $genome->addNeuron($neuron);

@@ -70,16 +70,13 @@ class Manager
 
     public function initializePool()
     {
-        $pool = new Pool($this->em, $this->outputsAggregator, $this->inputsAggregator, $this->mutation);
-        $this->em->persist($pool);
-        $this->em->flush();
-
-        $repo       = $this->em->getRepository('NeatBundle:Pool');
-        $this->pool = $repo->findOneBy([]);
+        $this->pool = new Pool($this->em, $this->outputsAggregator, $this->inputsAggregator, $this->mutation);
 
         for ($i = 0; $i < Pool::POPULATION; $i++) {
             $this->pool->addToSpecies($this->pool->createBasicGenome());
         }
+
+        $this->em->persist($this->pool);
 
         $this->initializeRun();
     }
