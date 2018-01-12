@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "643140dae04869fa27455b0c1cb6d3a8",
+    "content-hash": "6deafa6c67ebc03cce0451c94551ca72",
     "packages": [
         {
             "name": "doctrine/annotations",
@@ -826,12 +826,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/GregoireHebert/io-bundle.git",
-                "reference": "12eaff3e31d8ba52c0a3180554fe4e3f9c1f19fc"
+                "reference": "e69acac9dcbb997160582d1dbb201e6988f8eaf2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/GregoireHebert/io-bundle/zipball/12eaff3e31d8ba52c0a3180554fe4e3f9c1f19fc",
-                "reference": "12eaff3e31d8ba52c0a3180554fe4e3f9c1f19fc",
+                "url": "https://api.github.com/repos/GregoireHebert/io-bundle/zipball/e69acac9dcbb997160582d1dbb201e6988f8eaf2",
+                "reference": "e69acac9dcbb997160582d1dbb201e6988f8eaf2",
                 "shasum": ""
             },
             "require": {
@@ -844,7 +844,7 @@
             "type": "symfony-bundle",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.0.x-dev"
+                    "dev-master": "1.1.x-dev"
                 }
             },
             "autoload": {
@@ -872,7 +872,7 @@
                 "neuroevolution",
                 "topologies"
             ],
-            "time": "2016-12-19T16:02:45+00:00"
+            "time": "2018-01-12T21:12:54+00:00"
         },
         {
             "name": "gos/pnctl-event-loop-emitter",
@@ -2213,9 +2213,7 @@
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": {
-        "gheb/io-bundle": 20
-    },
+    "stability-flags": [],
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
