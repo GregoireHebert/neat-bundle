@@ -3,6 +3,8 @@
 namespace Gheb\NeatBundle\Command;
 
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMInvalidArgumentException;
 use Gheb\IOBundle\Aggregator\Aggregator;
 use Gheb\NeatBundle\Neat\Mutation;
 use Gheb\NeatBundle\HookInterface;
@@ -97,12 +99,17 @@ class EvaluateCommand extends Command
     /**
      * @param InputInterface  $input
      * @param OutputInterface $output
+     *
+     * @throws ORMInvalidArgumentException
+     * @throws OptimisticLockException
+     * @throws \Exception
+     *
      * @return void
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): void
     {
         $manager = new Manager($this->em, $this->inputsAggregator, $this->outputsAggregator, $this->mutation, $this->pusher);
-        $this->em->getConnection()->getConfiguration()->setSQLLogger(null);
+        $this->em->getConnection()->getConfiguration()->setSQLLogger();
 
         if ($this->stopEvaluationHook instanceof HookInterface ? ($this->stopEvaluationHook)() : true) {
             $manager->evaluateBest();

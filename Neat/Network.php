@@ -2,12 +2,14 @@
 
 namespace Gheb\NeatBundle\Neat;
 
+use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\OptimisticLockException;
 use Gheb\IOBundle\Inputs\AbstractInput;
 use Gheb\IOBundle\Aggregator\Aggregator ;
 
 class Network
 {
-    const MAX_NODES = 1000000;
+    public const MAX_NODES = 1000000;
 
     /**
      * Receive inputs and evaluate them in function of their values
@@ -21,10 +23,10 @@ class Network
      *
      * @throws \Exception
      */
-    public static function evaluate(Genome $genome, $inputs, Aggregator  $outputsAggregator, Aggregator  $inputsAggregator)
+    public static function evaluate(Genome $genome, $inputs, Aggregator  $outputsAggregator, Aggregator  $inputsAggregator): array
     {
-        if ($inputsAggregator->count() != count($inputs)) {
-            throw new \Exception('Incorrect number of neural network inputs');
+        if ($inputsAggregator->count() !== \count($inputs)) {
+            throw new \InvalidArgumentException('Incorrect number of neural network inputs');
         }
 
         $inputCount = $inputsAggregator->count();
@@ -61,11 +63,14 @@ class Network
     /**
      * Structure a network of neurons based on genes in and out
      *
-     * @param Genome            $genome
-     * @param Aggregator  $outputsAggregator
-     * @param Aggregator   $inputsAggregator
+     * @param Genome        $genome
+     * @param Aggregator    $outputsAggregator
+     * @param Aggregator    $inputsAggregator
+     * @param EntityManager $em
+     *
+     * @throws OptimisticLockException
      */
-    public static function generateNetwork(Genome $genome, Aggregator  $outputsAggregator, Aggregator  $inputsAggregator)
+    public static function generateNetwork(Genome $genome, Aggregator  $outputsAggregator, Aggregator  $inputsAggregator, EntityManager $em)
     {
         $inputCount = $inputsAggregator->count();
         for ($i = 0; $i < $inputCount; $i++) {
@@ -85,9 +90,11 @@ class Network
         $iterator = $genome->getGenes()->getIterator();
         $iterator->uasort(
             function (Gene $first, Gene $second) {
-                return (int)$first->getOut() < (int)$second->getOut() ? -1 : 1;
+                return $first->getOut() < $second->getOut() ? -1 : 1;
             }
         );
+
+        $em->flush();
 
         $iteratorCount = $iterator->count();
         for ($i = 0; $i < $iteratorCount; $i++) {
@@ -95,21 +102,23 @@ class Network
             $gene = $iterator->offsetGet($i);
 
             if ($gene->isEnabled()) {
-                $neuron = $genome->getNeuron($gene->getOut());
-
-                if (!($neuron instanceof Neuron)) {
+                if (!$genome->getNeuron($gene->getOut()) instanceof Neuron) {
                     $neuron = new Neuron();
                     $neuron->setPosition($gene->getOut());
                     $genome->addNeuron($neuron);
                 }
 
-                $neuron->incoming->add($gene);
+                /** @var Neuron $neuron */
+                $neuron = $genome->getNeuron($gene->getOut());
+                $neuron->getIncoming()->add($gene);
 
-                if (false === $genome->getNeuron($gene->getInto())) {
+                if (!$genome->getNeuron($gene->getInto()) instanceof Neuron) {
                     $neuron = new Neuron();
                     $neuron->setPosition($gene->getInto());
                     $genome->addNeuron($neuron);
                 }
+
+                $em->flush();
             }
         }
     }
@@ -121,7 +130,7 @@ class Network
      *
      * @return float
      */
-    public static function sigmoid($x)
+    public static function sigmoid($x): float
     {
         return 2/(1+exp(-4.9*$x))-1;
     }

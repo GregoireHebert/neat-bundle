@@ -18,7 +18,7 @@ class HookCompilerPass implements CompilerPassInterface
      *
      * @throws \Exception
      */
-    public function process(ContainerBuilder $container)
+    public function process(ContainerBuilder $container): void
     {
         $neatCommand = $container->getDefinition('gheb.neat.generate.command');
         $evalCommand = $container->getDefinition('gheb.neat.evaluate.command');
@@ -31,11 +31,11 @@ class HookCompilerPass implements CompilerPassInterface
         $nextGenomeCriteriaHooks = array_keys($container->findTaggedServiceIds('gheb.neat.hook.nextGenomeCriteria'));
 
         if (empty($nextGenomeCriteriaHooks)) {
-            throw new \Exception('You must define a Hook for the next genome criteria');
+            throw new \InvalidArgumentException('You must define a Hook for the next genome criteria');
         }
 
         if (empty($getFitnessHooks)) {
-            throw new \Exception('You must define a Hook returning the current evaluation fitness');
+            throw new \InvalidArgumentException('You must define a Hook returning the current evaluation fitness');
         }
 
         foreach ($beforeInitHooks as $beforeInitHook) {

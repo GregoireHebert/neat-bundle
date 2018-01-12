@@ -19,8 +19,10 @@ class NeatExtension extends Extension
      *
      * @param array            $config
      * @param ContainerBuilder $container
+     *
+     * @throws \Exception
      */
-    public function load(array $config, ContainerBuilder $container)
+    public function load(array $config, ContainerBuilder $container): void
     {
         $locator = new FileLocator(__DIR__ . '/../Resources/config');
         $loader  = new YamlFileLoader($container, $locator);

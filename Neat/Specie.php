@@ -3,6 +3,7 @@
 namespace Gheb\NeatBundle\Neat;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 /**
  * Class Species
@@ -46,7 +47,7 @@ class Specie
         $this->genomes = new ArrayCollection();
     }
 
-    public function addGenome(Genome $genome)
+    public function addGenome(Genome $genome): void
     {
         $this->genomes->add($genome);
         $genome->setSpecie($this);
@@ -55,7 +56,7 @@ class Specie
     /**
      * Calculate the average fitness based on genome global rank
      */
-    public function calculateAverageFitness()
+    public function calculateAverageFitness(): void
     {
         $total = 0;
         /** @var Genome $genome */
@@ -69,7 +70,7 @@ class Specie
     /**
      * @return int
      */
-    public function getAverageFitness()
+    public function getAverageFitness(): int
     {
         return $this->averageFitness;
     }
@@ -77,22 +78,26 @@ class Specie
     /**
      * @return ArrayCollection
      */
-    public function getGenomes()
+    public function getGenomes(): Collection
     {
         return $this->genomes;
     }
 
-    public function getBestGenome() {
+    /**
+     * @return Genome|null
+     */
+    public function getBestGenome():? Genome
+    {
         /** var Genome $genome */
         return $this->getGenomes()->filter(function(Genome $genome){
-            return $genome->getFitness() == $this->getTopFitness();
+            return $genome->getFitness() === $this->getTopFitness();
         })->first();
     }
 
     /**
      * @return int
      */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
@@ -100,7 +105,7 @@ class Specie
     /**
      * @return Pool
      */
-    public function getPool()
+    public function getPool(): Pool
     {
         return $this->pool;
     }
@@ -108,7 +113,7 @@ class Specie
     /**
      * @return int
      */
-    public function getStaleness()
+    public function getStaleness(): int
     {
         return $this->staleness;
     }
@@ -116,12 +121,15 @@ class Specie
     /**
      * @return int
      */
-    public function getTopFitness()
+    public function getTopFitness(): int
     {
         return $this->topFitness;
     }
 
-    public function removeGenome(Genome $genome)
+    /**
+     * @param Genome $genome
+     */
+    public function removeGenome(Genome $genome): void
     {
         $genome->setSpecie(null);
         $this->genomes->removeElement($genome);
@@ -130,7 +138,7 @@ class Specie
     /**
      * @param int $averageFitness
      */
-    public function setAverageFitness($averageFitness)
+    public function setAverageFitness($averageFitness): void
     {
         $this->averageFitness = $averageFitness;
     }
@@ -138,7 +146,7 @@ class Specie
     /**
      * @param ArrayCollection $genomes
      */
-    public function setGenomes($genomes)
+    public function setGenomes($genomes): void
     {
         $this->genomes = $genomes;
     }
@@ -146,7 +154,7 @@ class Specie
     /**
      * @param int $id
      */
-    public function setId($id)
+    public function setId($id): void
     {
         $this->id = $id;
     }
@@ -154,7 +162,7 @@ class Specie
     /**
      * @param Pool $pool
      */
-    public function setPool($pool)
+    public function setPool($pool): void
     {
         $this->pool = $pool;
     }
@@ -162,7 +170,7 @@ class Specie
     /**
      * @param int $staleness
      */
-    public function setStaleness($staleness)
+    public function setStaleness($staleness): void
     {
         $this->staleness = $staleness;
     }
@@ -170,7 +178,7 @@ class Specie
     /**
      * @param int $topFitness
      */
-    public function setTopFitness($topFitness)
+    public function setTopFitness($topFitness): void
     {
         $this->topFitness = $topFitness;
     }

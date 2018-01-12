@@ -3,6 +3,7 @@
 namespace Gheb\NeatBundle\Neat;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 class Genome
 {
@@ -83,7 +84,7 @@ class Genome
     /**
      * @param Gene $gene
      */
-    public function addGene(Gene $gene)
+    public function addGene(Gene $gene): void
     {
         $this->genes->add($gene);
         $gene->setGenome($this);
@@ -92,7 +93,7 @@ class Genome
     /**
      * @param Neuron $neuron
      */
-    public function addNeuron(Neuron $neuron)
+    public function addNeuron(Neuron $neuron): void
     {
         $this->network->add($neuron);
     }
@@ -100,7 +101,7 @@ class Genome
     /**
      * @return int
      */
-    public function getFitness()
+    public function getFitness(): int
     {
         return $this->fitness;
     }
@@ -108,7 +109,7 @@ class Genome
     /**
      * @return ArrayCollection
      */
-    public function getGenes()
+    public function getGenes(): Collection
     {
         return $this->genes;
     }
@@ -116,7 +117,7 @@ class Genome
     /**
      * @return int
      */
-    public function getGlobalRank()
+    public function getGlobalRank(): int
     {
         return $this->globalRank;
     }
@@ -124,7 +125,7 @@ class Genome
     /**
      * @return int
      */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
@@ -132,7 +133,7 @@ class Genome
     /**
      * @return int
      */
-    public function getMaxNeuron()
+    public function getMaxNeuron(): int
     {
         return $this->maxNeuron;
     }
@@ -140,7 +141,7 @@ class Genome
     /**
      * @return array
      */
-    public function getMutationRates()
+    public function getMutationRates(): array
     {
         return $this->mutationRates;
     }
@@ -148,7 +149,7 @@ class Genome
     /**
      * @return ArrayCollection
      */
-    public function getNetwork()
+    public function getNetwork(): Collection
     {
         return $this->network;
     }
@@ -156,24 +157,27 @@ class Genome
     /**
      * @param $position
      *
-     * @return Neuron|False
+     * @return Neuron|bool
      */
     public function getNeuron($position)
     {
         return $this->network->filter(function (Neuron $neuron) use ($position) {
-            return $neuron->getPosition() == $position;
+            return $neuron->getPosition() === $position;
         })->first();
     }
 
     /**
      * @return Specie
      */
-    public function getSpecie()
+    public function getSpecie(): Specie
     {
         return $this->specie;
     }
 
-    public function removeGene(Gene $gene)
+    /**
+     * @param Gene $gene
+     */
+    public function removeGene(Gene $gene): void
     {
         $gene->setGenome(null);
         $this->genes->removeElement($gene);
@@ -182,7 +186,7 @@ class Genome
     /**
      * @param int $fitness
      */
-    public function setFitness($fitness)
+    public function setFitness(int $fitness): void
     {
         $this->fitness = $fitness;
     }
@@ -190,7 +194,7 @@ class Genome
     /**
      * @param ArrayCollection $genes
      */
-    public function setGenes($genes)
+    public function setGenes(ArrayCollection $genes): void
     {
         $this->genes = $genes;
     }
@@ -198,7 +202,7 @@ class Genome
     /**
      * @param int $globalRank
      */
-    public function setGlobalRank($globalRank)
+    public function setGlobalRank(int $globalRank): void
     {
         $this->globalRank = $globalRank;
     }
@@ -206,7 +210,7 @@ class Genome
     /**
      * @param int $id
      */
-    public function setId($id)
+    public function setId($id): void
     {
         $this->id = $id;
     }
@@ -214,7 +218,7 @@ class Genome
     /**
      * @param int $maxNeuron
      */
-    public function setMaxNeuron($maxNeuron)
+    public function setMaxNeuron(int $maxNeuron): void
     {
         $this->maxNeuron = $maxNeuron;
     }
@@ -222,15 +226,15 @@ class Genome
     /**
      * @param array $mutationRates
      */
-    public function setMutationRates($mutationRates)
+    public function setMutationRates(array $mutationRates): void
     {
         $this->mutationRates = $mutationRates;
     }
 
     /**
-     * @param mixed $network
+     * @param ArrayCollection $network
      */
-    public function setNetwork($network)
+    public function setNetwork(ArrayCollection $network): void
     {
         $this->network = $network;
     }
@@ -238,7 +242,7 @@ class Genome
     /**
      * @param Specie $specie
      */
-    public function setSpecie($specie)
+    public function setSpecie(Specie $specie): void
     {
         $this->specie = $specie;
     }

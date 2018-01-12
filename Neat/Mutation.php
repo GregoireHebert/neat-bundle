@@ -4,18 +4,29 @@ namespace Gheb\NeatBundle\Neat;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\ORMInvalidArgumentException;
 use Gheb\IOBundle\Aggregator\Aggregator ;
 
 class Mutation
 {
-    const PERTURB_CHANCE = 0.90;
+    public const PERTURB_CHANCE = 0.90;
 
     /**
      * @var EntityManager
      */
     private $em;
-
+    /**
+     * @var Pool
+     */
     private $pool;
+    /**
+     * @var Aggregator
+     */
+    private $inputsAggregator;
+    /**
+     * @var Aggregator
+     */
+    private $outputsAggregator;
 
     /**
      * Manager constructor.
@@ -36,6 +47,8 @@ class Mutation
      *
      * @param $entity
      *
+     * @throws ORMInvalidArgumentException
+     *
      * @return mixed
      */
     public function cloneEntity($entity)
@@ -52,9 +65,11 @@ class Mutation
      * @param Genome $g1
      * @param Genome $g2
      *
+     * @throws ORMInvalidArgumentException
+     *
      * @return Genome
      */
-    public function crossOver(Genome $g1, Genome $g2)
+    public function crossOver(Genome $g1, Genome $g2): Genome
     {
         if ($g2->getFitness() > $g1->getFitness()) {
             $temp = $g1;
@@ -75,8 +90,8 @@ class Mutation
         // the gene added is randomly chosen between the two.
         foreach ($g1->getGenes() as $gene) {
             /** @var Gene $gene2 */
-            $gene2 = isset($newInnovation[$gene->getInnovation()]) ? $newInnovation[$gene->getInnovation()] : null;
-            if (null !== $gene2 && mt_rand(1, 2) == 1 && true === $gene2->isEnabled()) {
+            $gene2 = $newInnovation[$gene->getInnovation()] ?? null;
+            if (null !== $gene2 && random_int(1, 2) === 1 && true === $gene2->isEnabled()) {
                 $child->addGene($this->cloneEntity($gene2));
             } else {
                 $child->addGene($this->cloneEntity($gene));
@@ -95,9 +110,9 @@ class Mutation
      * @param Genome $genome
      * @param bool   $enabled // changes enabled ones to disabled when true, and changes disabled ones to enabled when false
      */
-    public function enableDisableMutate(Genome $genome, $enabled = true)
+    public function enableDisableMutate(Genome $genome, $enabled = true): void
     {
-        if ($genome->getGenes()->count() == 0) {
+        if ($genome->getGenes()->count() === 0) {
             return;
         }
 
@@ -105,16 +120,16 @@ class Mutation
 
         /** @var Gene $gene */
         foreach ($genome->getGenes() as $gene) {
-            if ($gene->isEnabled() != $enabled) {
+            if ($gene->isEnabled() !== $enabled) {
                 $candidates->add($gene);
             }
         }
 
-        if ($candidates->count() == 0) {
+        if ($candidates->count() === 0) {
             return;
         }
 
-        $gene = $candidates->get(mt_rand(1, $candidates->count())-1);
+        $gene = $candidates->get(random_int(1, $candidates->count())-1);
         $gene->setEnabled(!$gene->isEnabled());
     }
 
@@ -152,7 +167,7 @@ class Mutation
             }
         }
 
-        $r = mt_rand(1, count($neurons)) -1;
+        $r = random_int(1, \count($neurons)) -1;
         $n = array_values($neurons);
 
         return $n[$r];
@@ -165,18 +180,19 @@ class Mutation
      * @param Genome $genome
      * @param        $forceBias
      */
-    public function linkMutate(Genome $genome, $forceBias)
+    public function linkMutate(Genome $genome, $forceBias): void
     {
-        $rn1 = $this->getRandomNeuron($genome->getGenes(), false);
+        $rn1 = $this->getRandomNeuron($genome->getGenes());
         $rn2 = $this->getRandomNeuron($genome->getGenes(), true);
 
         // both are inputs, nothing to do
-        if ($this->inputsAggregator->count() > $rn1 && $this->inputsAggregator->count() > $rn2) {
-            return;
+        $count = $this->inputsAggregator->count();
+        if ($count > $rn1 && $count > $rn2) {
+            return ;
         }
 
         // set as rn1 is an input and rn2 a nonInput
-        if ($this->inputsAggregator->count() > $rn2) {
+        if ($count > $rn2) {
             $tmp = $rn1;
             $rn1 = $rn2;
             $rn2 = $tmp;
@@ -191,7 +207,7 @@ class Mutation
         }
 
         $exists = $genome->getGenes()->filter(function (Gene $gene) use ($newLink) {
-            return $gene->getInto() == $newLink->getInto() && $gene->getOut() == $newLink->getOut();
+            return $gene->getInto() === $newLink->getInto() && $gene->getOut() === $newLink->getOut();
         });
 
         if ($exists->count() > 0) {
@@ -211,14 +227,14 @@ class Mutation
      * @param Genome $genome
      * @param Pool   $pool   pool to innovate, when the genome hasn't been attached to it yet
      */
-    public function mutate(Genome $genome, $pool = null)
+    public function mutate(Genome $genome, $pool = null): void
     {
         $this->pool = $pool;
         $rates      = $genome->mutationRates;
 
         // has a chance to reduce the mutation rate or rise it up
         foreach ($rates as $mutation=>$rate) {
-            if (mt_rand(1, 2) == 1) {
+            if (random_int(1, 2) === 1) {
                 $genome->mutationRates[$mutation] = 0.95*$rate;
             } else {
                 $genome->mutationRates[$mutation] = 1.05263*$rate;
@@ -231,8 +247,7 @@ class Mutation
             if (lcg_value() < $linkRate) {
                 $this->linkMutate($genome, false);
             }
-
-            $linkRate = $linkRate-1;
+            --$linkRate;
         }
 
         // has a chance to create a new link in between a bias node and an output nodes
@@ -241,8 +256,7 @@ class Mutation
             if (lcg_value() < $biasRate) {
                 $this->linkMutate($genome, true);
             }
-
-            $biasRate = $biasRate-1;
+            --$biasRate;
         }
 
         // has a chance to split a link in adding a new node in between
@@ -251,8 +265,7 @@ class Mutation
             if (lcg_value() < $nodeRate) {
                 $this->nodeMutate($genome);
             }
-
-            $nodeRate = $nodeRate-1;
+            --$nodeRate;
         }
 
         // has a chance to enable a disabled gene
@@ -261,8 +274,7 @@ class Mutation
             if (lcg_value() < $enableRate) {
                 $this->enableDisableMutate($genome);
             }
-
-            $enableRate = $enableRate-1;
+            --$enableRate;
         }
 
         // has a chance to disable an enabled gene
@@ -271,8 +283,7 @@ class Mutation
             if (lcg_value() < $disableRate) {
                 $this->enableDisableMutate($genome, false);
             }
-
-            $disableRate = $disableRate-1;
+            --$disableRate;
         }
     }
 
@@ -283,16 +294,14 @@ class Mutation
      *
      * @param Genome $genome
      */
-    public function nodeMutate(Genome $genome)
+    public function nodeMutate(Genome $genome): void
     {
-        if (0 == $genome->getGenes()->count()) {
+        if (0 === $genome->getGenes()->count()) {
             return;
         }
 
-        $genome->setMaxNeuron($genome->getMaxNeuron()+1);
-
         /** @var Gene $gene */
-        $gene = $genome->getGenes()->get(mt_rand(1, $genome->getGenes()->count())-1);
+        $gene = $genome->getGenes()->get(random_int(1, $genome->getGenes()->count())-1);
         if ($gene->isEnabled() === false) {
             return;
         }
@@ -316,5 +325,7 @@ class Mutation
         $clone2->setEnabled(true);
 
         $genome->addGene($clone2);
+
+        $genome->setMaxNeuron($genome->getMaxNeuron()+1);
     }
 }

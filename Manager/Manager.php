@@ -3,6 +3,8 @@
 namespace Gheb\NeatBundle\Manager;
 
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMInvalidArgumentException;
 use Gheb\IOBundle\Aggregator\Aggregator ;
 use Gheb\IOBundle\Outputs\AbstractOutput;
 use Gheb\NeatBundle\Neat\Genome;
@@ -47,6 +49,10 @@ class Manager
      * @param Aggregator    $outputsAggregator
      * @param Mutation      $mutation
      * @param PusherDecorator   $pusher
+     *
+     * @throws OptimisticLockException
+     * @throws ORMInvalidArgumentException
+     * @throws \Exception
      */
     public function __construct(EntityManager $em, Aggregator $inputsAggregator, Aggregator $outputsAggregator, Mutation $mutation, $pusher = null)
     {
@@ -68,37 +74,64 @@ class Manager
         }
     }
 
-    public function initializePool()
+    /**
+     * @throws OptimisticLockException
+     * @throws ORMInvalidArgumentException
+     * @throws \Exception
+     */
+    public function initializePool(): void
     {
-        $this->pool = new Pool($this->em, $this->outputsAggregator, $this->inputsAggregator, $this->mutation);
+
+        $pool = new Pool($this->em, $this->outputsAggregator, $this->inputsAggregator, $this->mutation);
+        $this->em->persist($pool);
+        $this->em->flush();
+
+        $repo       = $this->em->getRepository('NeatBundle:Pool');
+        $this->pool = $repo->findOneBy([]);
+
 
         for ($i = 0; $i < Pool::POPULATION; $i++) {
             $this->pool->addToSpecies($this->pool->createBasicGenome());
         }
 
-        $this->em->persist($this->pool);
+        $this->em->flush();
 
         $this->initializeRun();
     }
 
-    public function initializeRun()
+    /**
+     * @throws OptimisticLockException
+     * @throws \Exception
+     */
+    public function initializeRun(): void
     {
         /** @var Specie $specie */
         /* @var Genome $genome */
         $specie = $this->pool->getSpecies()->offsetGet($this->pool->getCurrentSpecies());
+
         $genome = $specie->getGenomes()->offsetGet($this->pool->getCurrentGenome());
 
-        Network::generateNetwork($genome, $this->outputsAggregator, $this->inputsAggregator);
+        Network::generateNetwork($genome, $this->outputsAggregator, $this->inputsAggregator, $this->em);
 
         $this->evaluateCurrent();
     }
 
-    public function evaluateCurrent()
+    /**
+     * @throws \Exception
+     */
+    public function evaluateCurrent(): void
     {
         /** @var Specie $specie */
         /* @var Genome $genome */
         $specie = $this->pool->getSpecies()->offsetGet($this->pool->getCurrentSpecies());
+        if (!$specie instanceof Specie) {
+            return ;
+        }
+
         $genome = $specie->getGenomes()->offsetGet($this->pool->getCurrentGenome());
+        if (!$specie instanceof Specie) {
+            return ;
+        }
 
         $inputs  = $this->inputsAggregator->aggregate->toArray();
         $outputs = Network::evaluate($genome, $inputs, $this->outputsAggregator, $this->inputsAggregator);
@@ -106,7 +139,10 @@ class Manager
         $this->applyOutputs($outputs);
     }
 
-    public function applyOutputs($outputs)
+    /**
+     * @param $outputs
+     */
+    public function applyOutputs(array $outputs): void
     {
         /** @var AbstractOutput $output */
         foreach ($outputs as $output) {
@@ -120,7 +156,10 @@ class Manager
         }
     }
 
-    public function evaluateBest()
+    /**
+     * @throws \Exception
+     */
+    public function evaluateBest(): void
     {
         $genome = $this->pool->getBestGenome();
 
@@ -140,21 +179,27 @@ class Manager
      *
      * @return bool
      */
-    public function fitnessAlreadyMeasured()
+    public function fitnessAlreadyMeasured(): bool
     {
         /** @var Specie $specie */
         $specie = $this->pool->getSpecies()->offsetGet($this->pool->getCurrentSpecies());
+        if (!$specie instanceof Specie) {
+            return false;
+        }
 
         /** @var Genome $genome */
         $genome = $specie->getGenomes()->offsetGet($this->pool->getCurrentGenome());
+        if (!$genome instanceof Genome) {
+            return false;
+        }
 
-        return $genome->getFitness() != 0;
+        return $genome->getFitness() !== 0;
     }
 
     /**
      * @return EntityManager
      */
-    public function getEm()
+    public function getEm(): EntityManager
     {
         return $this->em;
     }
@@ -162,7 +207,7 @@ class Manager
     /**
      * @param EntityManager $em
      */
-    public function setEm($em)
+    public function setEm($em): void
     {
         $this->em = $em;
     }
@@ -170,7 +215,7 @@ class Manager
     /**
      * @return Aggregator
      */
-    public function getInputsAggregator()
+    public function getInputsAggregator(): Aggregator
     {
         return $this->inputsAggregator;
     }
@@ -178,7 +223,7 @@ class Manager
     /**
      * @param Aggregator  $inputsAggregator
      */
-    public function setInputsAggregator($inputsAggregator)
+    public function setInputsAggregator($inputsAggregator): void
     {
         $this->inputsAggregator = $inputsAggregator;
     }
@@ -186,7 +231,7 @@ class Manager
     /**
      * @return Mutation
      */
-    public function getMutation()
+    public function getMutation(): Mutation
     {
         return $this->mutation;
     }
@@ -194,7 +239,7 @@ class Manager
     /**
      * @param Mutation $mutation
      */
-    public function setMutation($mutation)
+    public function setMutation($mutation): void
     {
         $this->mutation = $mutation;
     }
@@ -202,7 +247,7 @@ class Manager
     /**
      * @return Aggregator
      */
-    public function getOutputsAggregator()
+    public function getOutputsAggregator(): Aggregator
     {
         return $this->outputsAggregator;
     }
@@ -210,7 +255,7 @@ class Manager
     /**
      * @param Aggregator  $outputsAggregator
      */
-    public function setOutputsAggregator($outputsAggregator)
+    public function setOutputsAggregator($outputsAggregator): void
     {
         $this->outputsAggregator = $outputsAggregator;
     }
@@ -218,7 +263,7 @@ class Manager
     /**
      * @return Pool
      */
-    public function getPool()
+    public function getPool(): Pool
     {
         return $this->pool;
     }
@@ -226,7 +271,7 @@ class Manager
     /**
      * @param Pool $pool
      */
-    public function setPool($pool)
+    public function setPool($pool): void
     {
         $this->pool = $pool;
     }

@@ -3,6 +3,7 @@
 namespace Gheb\NeatBundle\Neat;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 class Neuron
 {
@@ -32,9 +33,9 @@ class Neuron
     }
 
     /**
-     * @param $gene
+     * @param Gene $gene
      */
-    public function addIncoming($gene)
+    public function addIncoming(Gene $gene): void
     {
         $this->incoming->add($gene);
     }
@@ -42,7 +43,7 @@ class Neuron
     /**
      * @return int
      */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
@@ -50,7 +51,7 @@ class Neuron
     /**
      * @return ArrayCollection
      */
-    public function getIncoming()
+    public function getIncoming(): Collection
     {
         return $this->incoming;
     }
@@ -66,7 +67,7 @@ class Neuron
     /**
      * @return float
      */
-    public function getValue()
+    public function getValue(): float
     {
         return $this->value;
     }
@@ -74,7 +75,7 @@ class Neuron
     /**
      * @param int $id
      */
-    public function setId($id)
+    public function setId($id): void
     {
         $this->id = $id;
     }
@@ -82,15 +83,15 @@ class Neuron
     /**
      * @param ArrayCollection $incoming
      */
-    public function setIncoming($incoming)
+    public function setIncoming($incoming): void
     {
         $this->incoming = $incoming;
     }
 
     /**
-     * @param mixed $position
+     * @param int $position
      */
-    public function setPosition($position)
+    public function setPosition(int $position): void
     {
         $this->position = $position;
     }
@@ -98,7 +99,7 @@ class Neuron
     /**
      * @param float $value
      */
-    public function setValue($value)
+    public function setValue(float $value): void
     {
         $this->value = $value;
     }

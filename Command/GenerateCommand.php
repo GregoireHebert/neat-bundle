@@ -3,7 +3,9 @@
 namespace Gheb\NeatBundle\Command;
 
 use Doctrine\ORM\EntityManager;
-use Gheb\IOBundle\Aggregator \Aggregator;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMInvalidArgumentException;
+use Gheb\IOBundle\Aggregator\Aggregator;
 use Gheb\NeatBundle\Neat\Genome;
 use Gheb\NeatBundle\Neat\Mutation;
 use Gheb\NeatBundle\Neat\Specie;
@@ -88,31 +90,49 @@ class GenerateCommand extends ContainerAwareCommand
         parent::__construct();
     }
 
+    /**
+     * @param HookInterface $hook
+     */
     public function addAfterEvaluationHooks(HookInterface $hook)
     {
         $this->afterEvaluationHooks[] = $hook;
     }
 
+    /**
+     * @param HookInterface $hook
+     */
     public function addBeforeInitHooks(HookInterface $hook)
     {
         $this->beforeInitHooks[] = $hook;
     }
 
+    /**
+     * @param HookInterface $hook
+     */
     public function addBeforeNewRunHooks(HookInterface $hook)
     {
         $this->beforeNewRunHooks[] = $hook;
     }
 
+    /**
+     * @param HookInterface $hook
+     */
     public function addGetFitnessHook(HookInterface $hook)
     {
         $this->getFitnessHook = $hook;
     }
 
+    /**
+     * @param HookInterface $hook
+     */
     public function addNextGenomeCriteriaHook(HookInterface $hook)
     {
         $this->nextGenomeCriteriaHook = $hook;
     }
 
+    /**
+     * @param HookInterface $hook
+     */
     public function addStopEvaluationHook(HookInterface $hook)
     {
         $this->stopEvaluationHook = $hook;
@@ -121,7 +141,7 @@ class GenerateCommand extends ContainerAwareCommand
     /**
      * configure the command
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('gheb:neat:generate')
@@ -131,19 +151,24 @@ class GenerateCommand extends ContainerAwareCommand
     /**
      * @param InputInterface  $input
      * @param OutputInterface $output
+     *
+     * @throws \Exception
+     * @throws ORMInvalidArgumentException
+     * @throws OptimisticLockException
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $this->em->getConnection()->getConfiguration()->setSQLLogger(null);
+
         // before init hooks
         foreach ($this->beforeInitHooks as $beforeInitHook) {
             $beforeInitHook();
         }
 
         $manager = new Manager($this->em, $this->inputsAggregator, $this->outputsAggregator, $this->mutation);
-        $this->em->getConnection()->getConfiguration()->setSQLLogger(null);
+        $pool = $manager->getPool();
 
         while ($this->stopEvaluationHook instanceof HookInterface ? ($this->stopEvaluationHook)() : true) {
-            $pool = $manager->getPool();
 
             /** @var Specie $specie */
             /* @var Genome $genome */

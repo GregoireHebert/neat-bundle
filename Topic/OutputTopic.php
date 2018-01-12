@@ -21,7 +21,7 @@ class OutputTopic implements TopicInterface, PushableTopicInterface
      * @param WampRequest $request
      * @return void
      */
-    public function onSubscribe(ConnectionInterface $connection, Topic $topic, WampRequest $request)
+    public function onSubscribe(ConnectionInterface $connection, Topic $topic, WampRequest $request): void
     {
         $this->topic = $topic;
     }
@@ -45,9 +45,8 @@ class OutputTopic implements TopicInterface, PushableTopicInterface
      * @param ConnectionInterface $connection
      * @param Topic $topic
      * @param WampRequest $request
-     * @return voids
      */
-    public function onUnSubscribe(ConnectionInterface $connection, Topic $topic, WampRequest $request)
+    public function onUnSubscribe(ConnectionInterface $connection, Topic $topic, WampRequest $request): void
     {
         $this->topic = null;
     }
@@ -56,18 +55,17 @@ class OutputTopic implements TopicInterface, PushableTopicInterface
      * This will receive any Publish requests for this topic.
      *
      * @param ConnectionInterface $connection
-     * @param $Topic topic
+     * @param Topic $topic
      * @param WampRequest $request
      * @param $event
      * @param array $exclude
      * @param array $eligible
+     *
      * @return mixed|void
      */
     public function onPublish(ConnectionInterface $connection, Topic $topic, WampRequest $request, $event, array $exclude, array $eligible)
     {
-        $topic->broadcast([
-            'msg' => $event
-        ]);
+        $topic->broadcast($event);
     }
 
     /**
@@ -83,9 +81,10 @@ class OutputTopic implements TopicInterface, PushableTopicInterface
 
     /**
      * Like RPC is will use to prefix the channel
+     *
      * @return string
      */
-    public function getName()
+    public function getName(): string
     {
         return 'output.application';
     }

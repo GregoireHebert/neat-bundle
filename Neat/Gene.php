@@ -49,7 +49,7 @@ class Gene
     /**
      * @return Genome
      */
-    public function getGenome()
+    public function getGenome(): Genome
     {
         return $this->genome;
     }
@@ -57,7 +57,7 @@ class Gene
     /**
      * @return int
      */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
@@ -65,7 +65,7 @@ class Gene
     /**
      * @return int
      */
-    public function getInnovation()
+    public function getInnovation(): int
     {
         return $this->innovation;
     }
@@ -73,7 +73,7 @@ class Gene
     /**
      * @return int
      */
-    public function getInto()
+    public function getInto(): int
     {
         return $this->into;
     }
@@ -81,7 +81,7 @@ class Gene
     /**
      * @return int
      */
-    public function getOut()
+    public function getOut(): int
     {
         return $this->out;
     }
@@ -89,7 +89,7 @@ class Gene
     /**
      * @return float
      */
-    public function getWeight()
+    public function getWeight(): float
     {
         return $this->weight;
     }
@@ -97,7 +97,7 @@ class Gene
     /**
      * @return bool
      */
-    public function isEnabled()
+    public function isEnabled(): bool
     {
         return $this->enabled;
     }
@@ -105,7 +105,7 @@ class Gene
     /**
      * @param bool $enabled
      */
-    public function setEnabled($enabled)
+    public function setEnabled(bool $enabled): void
     {
         $this->enabled = $enabled;
     }
@@ -113,7 +113,7 @@ class Gene
     /**
      * @param Genome $genome
      */
-    public function setGenome($genome)
+    public function setGenome(Genome $genome): void
     {
         $this->genome = $genome;
     }
@@ -121,7 +121,7 @@ class Gene
     /**
      * @param int $id
      */
-    public function setId($id)
+    public function setId($id): void
     {
         $this->id = $id;
     }
@@ -129,7 +129,7 @@ class Gene
     /**
      * @param int $innovation
      */
-    public function setInnovation($innovation)
+    public function setInnovation(int $innovation): void
     {
         $this->innovation = $innovation;
     }
@@ -137,7 +137,7 @@ class Gene
     /**
      * @param int $into
      */
-    public function setInto($into)
+    public function setInto(int $into): void
     {
         $this->into = $into;
     }
@@ -145,7 +145,7 @@ class Gene
     /**
      * @param int $out
      */
-    public function setOut($out)
+    public function setOut(int $out): void
     {
         $this->out = $out;
     }
@@ -153,7 +153,7 @@ class Gene
     /**
      * @param float $weight
      */
-    public function setWeight($weight)
+    public function setWeight(float $weight): void
     {
         $this->weight = $weight;
     }

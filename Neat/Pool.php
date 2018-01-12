@@ -3,7 +3,9 @@
 namespace Gheb\NeatBundle\Neat;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\ORMInvalidArgumentException;
 use Gheb\IOBundle\Aggregator\Aggregator;
 
 /**
@@ -11,12 +13,12 @@ use Gheb\IOBundle\Aggregator\Aggregator;
  */
 class Pool
 {
-    const CROSSOVER_CHANCE = 0.75;
-    const STALE_SPECIES    = 15;
-    const POPULATION       = 300;
-    const DELTA_DISJOINT   = 2.0;
-    const DELTA_WEIGHT     = 0.4;
-    const DELTA_THRESHOLD  = 1.0;
+    public const CROSSOVER_CHANCE = 0.75;
+    public const STALE_SPECIES    = 15;
+    public const POPULATION       = 50;
+    public const DELTA_DISJOINT   = 2.0;
+    public const DELTA_WEIGHT     = 0.4;
+    public const DELTA_THRESHOLD  = 1.0;
 
     /**
      * @var int
@@ -59,11 +61,6 @@ class Pool
     public $maxFitness = 0;
 
     /**
-     * @var int
-     */
-    private $maxInputs;
-
-    /**
      * @var Mutation
      */
     public $mutation;
@@ -85,7 +82,6 @@ class Pool
     {
         $this->em              = $em;
         $this->innovation      = $outputsAggregator->count();
-        $this->maxInputs       = $inputsAggregator->count();
         $this->inputAggregator = $inputsAggregator;
         $this->mutation        = $mutation;
 
@@ -97,7 +93,7 @@ class Pool
      *
      * @param Specie $specie
      */
-    public function addSpecie(Specie $specie)
+    public function addSpecie(Specie $specie): void
     {
         $this->species->add($specie);
         $specie->setPool($this);
@@ -108,7 +104,7 @@ class Pool
      *
      * @param Genome $child
      */
-    public function addToSpecies(Genome $child)
+    public function addToSpecies(Genome $child): void
     {
         $foundSpecie = false;
 
@@ -133,18 +129,20 @@ class Pool
      * For a specie, has a chance X over 0.75 to crossover 2 random genomes and return it,
      * or to create a new genome based on a random existing one
      *
-     *@param Specie $specie
+     * @param Specie $specie
+     *
+     * @throws ORMInvalidArgumentException
      *
      * @return Genome
      */
-    public function breedChild(Specie $specie)
+    public function breedChild(Specie $specie): Genome
     {
         if (lcg_value() < self::CROSSOVER_CHANCE) {
-            $g1    = $specie->genomes->offsetGet(mt_rand(1, $specie->genomes->count())-1);
-            $g2    = $specie->genomes->offsetGet(mt_rand(1, $specie->genomes->count())-1);
+            $g1    = $specie->genomes->offsetGet(random_int(1, $specie->genomes->count())-1);
+            $g2    = $specie->genomes->offsetGet(random_int(1, $specie->genomes->count())-1);
             $child = $this->mutation->crossOver($g1, $g2);
         } else {
-            $g     = $specie->genomes->offsetGet(mt_rand(1, $specie->genomes->count())-1);
+            $g     = $specie->genomes->offsetGet(random_int(1, $specie->genomes->count())-1);
             $child = $this->mutation->cloneEntity($g);
         }
 
@@ -160,11 +158,11 @@ class Pool
      *
      * @return Genome
      */
-    public function createBasicGenome()
+    public function createBasicGenome(): Genome
     {
         $genome = new Genome();
 
-        $genome->setMaxNeuron($this->maxInputs + 1);
+        $genome->setMaxNeuron($this->inputAggregator->count());
         $this->mutation->mutate($genome, $this);
 
         return $genome;
@@ -175,7 +173,7 @@ class Pool
      *
      * @param bool $cutToOne
      */
-    public function cullSpecies($cutToOne = false)
+    public function cullSpecies($cutToOne = false): void
     {
         /** @var Specie $specie */
         foreach ($this->species as &$specie) {
@@ -190,8 +188,8 @@ class Pool
 
             $remaining        = $cutToOne ? 1 : ceil($specie->getGenomes()->count() / 2);
             $remainingGenomes = new ArrayCollection();
-            $genomes          = iterator_to_array($iterator, true);
-            while (count($genomes) >= $remaining) {
+            $genomes          = iterator_to_array($iterator);
+            while (\count($genomes) >= $remaining) {
                 // get the highest
                 $remainingGenomes->add(array_pop($genomes));
             }
@@ -209,7 +207,7 @@ class Pool
      *
      * @return float
      */
-    public function disjoint(Genome $g1, Genome $g2)
+    public function disjoint(Genome $g1, Genome $g2): float
     {
         $disjointGenes = 0;
 
@@ -226,13 +224,13 @@ class Pool
         }
 
         foreach ($g1->getGenes() as $gene) {
-            if (!in_array($gene->getInnovation(), $innovation2)) {
+            if (!\in_array($gene->getInnovation(), $innovation2, false)) {
                 $disjointGenes++;
             }
         }
 
         foreach ($g2->getGenes() as $gene) {
-            if (!in_array($gene->getInnovation(), $innovation1)) {
+            if (!\in_array($gene->getInnovation(), $innovation1, false)) {
                 $disjointGenes++;
             }
         }
@@ -245,7 +243,7 @@ class Pool
     /**
      * @return int
      */
-    public function getCurrentGenome()
+    public function getCurrentGenome(): int
     {
         return $this->currentGenome;
     }
@@ -253,7 +251,7 @@ class Pool
     /**
      * @return int
      */
-    public function getCurrentSpecies()
+    public function getCurrentSpecies(): int
     {
         return $this->currentSpecies;
     }
@@ -261,7 +259,7 @@ class Pool
     /**
      * @return EntityManager
      */
-    public function getEm()
+    public function getEm(): EntityManager
     {
         return $this->em;
     }
@@ -269,7 +267,7 @@ class Pool
     /**
      * @return int
      */
-    public function getGeneration()
+    public function getGeneration(): int
     {
         return $this->generation;
     }
@@ -277,7 +275,7 @@ class Pool
     /**
      * @return int
      */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
@@ -285,7 +283,7 @@ class Pool
     /**
      * @return int
      */
-    public function getInnovation()
+    public function getInnovation(): int
     {
         return $this->innovation;
     }
@@ -293,7 +291,7 @@ class Pool
     /**
      * @return Aggregator
      */
-    public function getInputAggregator()
+    public function getInputAggregator(): Aggregator
     {
         return $this->inputAggregator;
     }
@@ -301,7 +299,7 @@ class Pool
     /**
      * @return int
      */
-    public function getMaxFitness()
+    public function getMaxFitness(): int
     {
         return $this->maxFitness;
     }
@@ -309,7 +307,7 @@ class Pool
     /**
      * @return Mutation
      */
-    public function getMutation()
+    public function getMutation(): Mutation
     {
         return $this->mutation;
     }
@@ -317,18 +315,19 @@ class Pool
     /**
      * @return ArrayCollection
      */
-    public function getSpecies()
+    public function getSpecies(): Collection
     {
         return $this->species;
     }
 
     /**
-     * @return mixed
+     * @return Genome|null
      */
-    public function getBestGenome() {
+    public function getBestGenome():? Genome
+    {
         /** @var Specie $specie */
         $specie = $this->species->filter(function(Specie $specie){
-            return $specie->getTopFitness() == $this->getMaxFitness();
+            return $specie->getTopFitness() === $this->getMaxFitness();
         })->first();
 
         return $specie->getBestGenome();
@@ -336,11 +335,13 @@ class Pool
 
     /**
      * Create a all new generation
+     *
+     * @throws ORMInvalidArgumentException
      */
-    public function newGeneration()
+    public function newGeneration(): void
     {
         // Remove the lower fitness half genomes of each specie
-        $this->cullSpecies(false);
+        $this->cullSpecies();
 
         // give a rank based on it's fitness
         $this->rankGlobally();
@@ -378,8 +379,8 @@ class Pool
         // Since the creation of new child is based on top fitness species,
         // it does not contains as much population as the maximum defined.
         // Therefor we create a new child from a random specie until the max population is reached
-        while ($children->count() + $this->species->count() < self::POPULATION) {
-            $specie = $this->species->offsetGet(rand(1, $this->species->count())-1);
+        while ($this->species->count() > 0 && ($children->count() + $this->species->count() > 0) && ($children->count() + $this->species->count()) < self::POPULATION) {
+            $specie = $this->species->offsetGet(random_int(1, $this->species->count())-1);
             $children->add($this->breedChild($specie));
         }
 
@@ -397,18 +398,18 @@ class Pool
      *
      * @return int
      */
-    public function newInnovation()
+    public function newInnovation(): int
     {
-        $this->innovation++;
-
-        return $this->innovation;
+        return ++$this->innovation;
     }
 
     /**
      * Tries to get to the next genome. If we passed the number of genome available, we try a new specie.
      * If we passed the number of species available, create a new generation.
+     *
+     * @throws ORMInvalidArgumentException
      */
-    public function nextGenome()
+    public function nextGenome(): void
     {
         $this->currentGenome++;
 
@@ -425,15 +426,14 @@ class Pool
     /**
      * Higher is better
      */
-    public function rankGlobally()
+    public function rankGlobally(): void
     {
         $global = new ArrayCollection();
 
-        /*
-         * @var Specie
-         */
+        /** @var Specie $specie */
         foreach ($this->species as $specie) {
-            foreach ($specie->getGenomes() as $genome) {
+            $genomes = $specie->getGenomes();
+            foreach ($genomes as $genome) {
                 $global->add($genome);
             }
         }
@@ -452,7 +452,10 @@ class Pool
         }
     }
 
-    public function removeSpecie(Specie $specie)
+    /**
+     * @param Specie $specie
+     */
+    public function removeSpecie(Specie $specie): void
     {
         $specie->setPool(null);
         $this->species->removeElement($specie);
@@ -460,8 +463,10 @@ class Pool
 
     /**
      * Remove all species not having enough fitness for the pool previous maxfitness
+     *
+     * @throws ORMInvalidArgumentException
      */
-    public function removeStaleSpecies()
+    public function removeStaleSpecies(): void
     {
         /**
          * @var int
@@ -500,8 +505,10 @@ class Pool
 
     /**
      * Remove all species having a fitness lower than the average
+     *
+     * @throws ORMInvalidArgumentException
      */
-    public function removeWeakSpecies()
+    public function removeWeakSpecies(): void
     {
         $sum = $this->totalAverageFitness();
 
@@ -526,7 +533,7 @@ class Pool
      *
      * @return bool
      */
-    public function sameSpecies($genome1, $genome2)
+    public function sameSpecies($genome1, $genome2): bool
     {
         $dd = self::DELTA_DISJOINT * $this->disjoint($genome1, $genome2);
         $dw = self::DELTA_WEIGHT * $this->weight($genome1, $genome2);
@@ -539,7 +546,7 @@ class Pool
     /**
      * @param int $currentGenome
      */
-    public function setCurrentGenome($currentGenome)
+    public function setCurrentGenome($currentGenome): void
     {
         $this->currentGenome = $currentGenome;
     }
@@ -547,7 +554,7 @@ class Pool
     /**
      * @param int $currentSpecies
      */
-    public function setCurrentSpecies($currentSpecies)
+    public function setCurrentSpecies($currentSpecies): void
     {
         $this->currentSpecies = $currentSpecies;
     }
@@ -555,7 +562,7 @@ class Pool
     /**
      * @param EntityManager $em
      */
-    public function setEm($em)
+    public function setEm($em): void
     {
         $this->em = $em;
     }
@@ -563,7 +570,7 @@ class Pool
     /**
      * @param int $generation
      */
-    public function setGeneration($generation)
+    public function setGeneration($generation): void
     {
         $this->generation = $generation;
     }
@@ -571,7 +578,7 @@ class Pool
     /**
      * @param int $id
      */
-    public function setId($id)
+    public function setId($id): void
     {
         $this->id = $id;
     }
@@ -579,7 +586,7 @@ class Pool
     /**
      * @param int $innovation
      */
-    public function setInnovation($innovation)
+    public function setInnovation($innovation): void
     {
         $this->innovation = $innovation;
     }
@@ -587,7 +594,7 @@ class Pool
     /**
      * @param Aggregator $inputAggregator
      */
-    public function setInputAggregator($inputAggregator)
+    public function setInputAggregator($inputAggregator): void
     {
         $this->inputAggregator = $inputAggregator;
     }
@@ -595,7 +602,7 @@ class Pool
     /**
      * @param int $maxFitness
      */
-    public function setMaxFitness($maxFitness)
+    public function setMaxFitness($maxFitness): void
     {
         $this->maxFitness = $maxFitness;
     }
@@ -603,7 +610,7 @@ class Pool
     /**
      * @param Mutation $mutation
      */
-    public function setMutation($mutation)
+    public function setMutation($mutation): void
     {
         $this->mutation = $mutation;
     }
@@ -611,7 +618,7 @@ class Pool
     /**
      * @param ArrayCollection $species
      */
-    public function setSpecies($species)
+    public function setSpecies($species): void
     {
         $this->species = $species;
     }
@@ -621,7 +628,7 @@ class Pool
      *
      * @return int
      */
-    public function totalAverageFitness()
+    public function totalAverageFitness(): int
     {
         $total = 0;
         /** @var Specie $specie */
@@ -640,7 +647,7 @@ class Pool
      *
      * @return float
      */
-    public function weight(Genome $g1, Genome $g2)
+    public function weight(Genome $g1, Genome $g2): float
     {
         $innovation = [];
 
@@ -662,6 +669,6 @@ class Pool
 
         // on php7 a division by zero (forced) returns INF Or before that, it returned false.
         // if INF is always > to any number, false is not.
-        return (0 === $coincident) ? (($sum < 0) ? -INF : (($sum == 0) ? NAN : INF)) : $sum/$coincident;
+        return (0 === $coincident) ? (($sum < 0) ? -INF : (($sum === 0) ? NAN : INF)) : $sum/$coincident;
     }
 }
