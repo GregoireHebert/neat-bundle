@@ -134,7 +134,7 @@ and plug it to the corresponding tag :
 ```yaml
 services:
   acme.neat.hook.nextgenomecriteria:
-    class: '%fish.neat.hook.nextgenomecriteria.class%'
+    class: '%tamagotchi.neat.hook.nextgenomecriteria.class%'
     arguments: [ "@doctrine.orm.entity_manager" ]
     tags:
       - { name: gheb.neat.hook.nextGenomeCriteria }
