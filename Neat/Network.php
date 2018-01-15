@@ -94,8 +94,6 @@ class Network
             }
         );
 
-        $em->flush();
-
         $iteratorCount = $iterator->count();
         for ($i = 0; $i < $iteratorCount; $i++) {
             /** @var Gene $gene */
@@ -110,7 +108,7 @@ class Network
 
                 /** @var Neuron $neuron */
                 $neuron = $genome->getNeuron($gene->getOut());
-                $neuron->getIncoming()->add($gene);
+                $neuron->addIncoming($gene);
 
                 if (!$genome->getNeuron($gene->getInto()) instanceof Neuron) {
                     $neuron = new Neuron();
@@ -118,9 +116,10 @@ class Network
                     $genome->addNeuron($neuron);
                 }
 
-                $em->flush();
             }
         }
+
+        $em->flush();
     }
 
     /**

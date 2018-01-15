@@ -16,15 +16,4 @@ Gheb\NeatBundle\Neat\Neuron:
   manyToMany:
     incoming:
       targetEntity: 'Gheb\NeatBundle\Neat\Gene'
-      cascade: ['persist', 'remove', 'refresh']
-      orphanRemoval: true
-      joinTable:
-        name: neuron_incoming
-        joinColumns:
-          neuron_id:
-            referencedColumnName: id
-            onDelete: CASCADE
-        inverseJoinColumns:
-          incoming_id:
-            referencedColumnName: id
-            onDelete: CASCADE
+      cascade: ['persist', 'refresh']

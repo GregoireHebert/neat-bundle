@@ -172,12 +172,17 @@ class GenerateCommand extends ContainerAwareCommand
 
             /** @var Specie $specie */
             /* @var Genome $genome */
-            $specie = $pool->getSpecies()->offsetGet($pool->getCurrentSpecies());
-            $genome = $specie->getGenomes()->offsetGet($pool->getCurrentGenome());
+            $species = $pool->getSpecies();
+            $specie = $species->offsetGet($species->getKeys()[$pool->getCurrentSpecies()]);
+            $genome = $specie->getGenomes()->offsetGet($specie->getGenomes()->getKeys()[$pool->getCurrentGenome()]);
 
             if (($this->nextGenomeCriteriaHook)()) {
                 $fitness = ($this->getFitnessHook)();
                 $genome->setFitness($fitness);
+
+                if ($specie->getTopFitness() < $fitness) {
+                    $specie->setTopFitness($fitness);
+                }
 
                 if ($pool->getMaxFitness() < $fitness) {
                     $pool->setMaxFitness($fitness);

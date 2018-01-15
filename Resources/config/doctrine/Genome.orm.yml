@@ -15,37 +15,35 @@ Gheb\NeatBundle\Neat\Genome:
     globalRank:
       type: integer
 
-  oneToMany:
-    genes:
-      targetEntity: 'Gheb\NeatBundle\Neat\Gene'
-      cascade: ['persist', 'remove', 'refresh']
-      orphanRemoval: true
-      mappedBy: genome
-
   manyToOne:
     specie:
       targetEntity: 'Gheb\NeatBundle\Neat\Specie'
-      cascade: ['persist', 'remove', 'refresh']
-      orphanRemoval: true
       inversedBy: genomes
-      joinColumn:
-        name: specie_id
-        referencedColumnName: id
-        onDelete: CASCADE
 
   manyToMany:
-    network:
-      targetEntity: 'Gheb\NeatBundle\Neat\Neuron'
-      cascade: ['persist', 'remove', 'refresh']
-      orphanRemoval: true
+    genes:
+      targetEntity: 'Gheb\NeatBundle\Neat\Gene'
+      cascade: ['persist']
       joinTable:
-        name: Genome_neurons
+        name: Genome_genes
         joinColumns:
           genome_id:
             referencedColumnName: id
             onDelete: CASCADE
         inverseJoinColumns:
+          gene_id:
+            referencedColumnName: id
+            unique: true
+
+    network:
+      targetEntity: 'Gheb\NeatBundle\Neat\Neuron'
+      cascade: ['persist']
+      joinTable:
+        name: Genome_neurons
+        joinColumns:
+          genome_id:
+            referencedColumnName: id
+        inverseJoinColumns:
           neuron_id:
             referencedColumnName: id
             unique: true
-            onDelete: CASCADE

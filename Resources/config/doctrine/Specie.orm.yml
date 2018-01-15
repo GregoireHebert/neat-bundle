@@ -16,13 +16,12 @@ Gheb\NeatBundle\Neat\Specie:
   oneToMany:
     genomes:
       targetEntity: 'Gheb\NeatBundle\Neat\Genome'
-      cascade: ['persist', 'remove', 'refresh']
+      cascade: ['persist']
       orphanRemoval: true
       mappedBy: specie
   manyToOne:
     pool:
       targetEntity: 'Gheb\NeatBundle\Neat\Pool'
-      cascade: ['persist', 'remove', 'refresh']
       orphanRemoval: true
       inversedBy: species
       joinColumn:

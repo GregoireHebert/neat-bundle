@@ -20,14 +20,3 @@ Gheb\NeatBundle\Neat\Gene:
       type: decimal
       precision: 8
       scale: 2
-
-  manyToOne:
-    genome:
-      targetEntity: 'Gheb\NeatBundle\Neat\Genome'
-      cascade: ['persist', 'remove', 'refresh']
-      orphanRemoval: true
-      inversedBy: genes
-      joinColumn:
-        name: genome_id
-        referencedColumnName: id
-        onDelete: CASCADE

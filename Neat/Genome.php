@@ -242,7 +242,7 @@ class Genome
     /**
      * @param Specie $specie
      */
-    public function setSpecie(Specie $specie): void
+    public function setSpecie($specie): void
     {
         $this->specie = $specie;
     }

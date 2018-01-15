@@ -5,6 +5,7 @@ namespace Gheb\NeatBundle\Neat;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMInvalidArgumentException;
 use Gheb\IOBundle\Aggregator\Aggregator;
 
@@ -110,7 +111,7 @@ class Pool
 
         /** @var Specie $specie */
         foreach ($this->species as $specie) {
-            if ($this->sameSpecies($child, $specie->genomes->offsetGet(0))) {
+            if ($this->sameSpecies($child, $specie->genomes->offsetGet($specie->genomes->getKeys()[0]))) {
                 $specie->addGenome($child);
                 $foundSpecie = true;
                 break;
@@ -138,11 +139,11 @@ class Pool
     public function breedChild(Specie $specie): Genome
     {
         if (lcg_value() < self::CROSSOVER_CHANCE) {
-            $g1    = $specie->genomes->offsetGet(random_int(1, $specie->genomes->count())-1);
-            $g2    = $specie->genomes->offsetGet(random_int(1, $specie->genomes->count())-1);
+            $g1    = $specie->genomes->offsetGet($specie->genomes->getKeys()[random_int(1, $specie->genomes->count())-1]);
+            $g2    = $specie->genomes->offsetGet($specie->genomes->getKeys()[random_int(1, $specie->genomes->count())-1]);
             $child = $this->mutation->crossOver($g1, $g2);
         } else {
-            $g     = $specie->genomes->offsetGet(random_int(1, $specie->genomes->count())-1);
+            $g     = $specie->genomes->offsetGet($specie->genomes->getKeys()[random_int(1, $specie->genomes->count())-1]);
             $child = $this->mutation->cloneEntity($g);
         }
 
@@ -172,11 +173,13 @@ class Pool
      * Remove the lower fitness half genomes of each specie or keep only the highest fitness genome of each specie.
      *
      * @param bool $cutToOne
+     *
+     * @throws OptimisticLockException
      */
     public function cullSpecies($cutToOne = false): void
     {
         /** @var Specie $specie */
-        foreach ($this->species as &$specie) {
+        foreach ($this->species as $specie) {
             $iterator = $specie->getGenomes()->getIterator();
 
             // order from lower to higher
@@ -186,16 +189,22 @@ class Pool
                 }
             );
 
-            $remaining        = $cutToOne ? 1 : ceil($specie->getGenomes()->count() / 2);
-            $remainingGenomes = new ArrayCollection();
-            $genomes          = iterator_to_array($iterator);
-            while (\count($genomes) >= $remaining) {
-                // get the highest
-                $remainingGenomes->add(array_pop($genomes));
-            }
+            /**
+             * @var int $position
+             * @var Genome $genome
+             */
+            $remaining  = $cutToOne ? $specie->getGenomes()->count()-1 : ceil($specie->getGenomes()->count() / 2);
+            foreach ($iterator as $genome) {
+                if (--$remaining>0) {
+                    $specie->removeGenome($genome);
+                    continue;
+                }
 
-            $specie->setGenomes($remainingGenomes);
+                break;
+            }
         }
+
+        $this->em->flush();
     }
 
     /**
@@ -337,6 +346,7 @@ class Pool
      * Create a all new generation
      *
      * @throws ORMInvalidArgumentException
+     * @throws OptimisticLockException
      */
     public function newGeneration(): void
     {
@@ -346,7 +356,7 @@ class Pool
         // give a rank based on it's fitness
         $this->rankGlobally();
 
-        // Remove all species not having enough fitness for the pool previous maxfitness
+        // Remove all species not having enough fitness for the pool previous max fitness
         $this->removeStaleSpecies();
 
         // give a rank based on it's fitness
@@ -376,11 +386,15 @@ class Pool
         // keep only the highest fitness genome of each specie
         $this->cullSpecies(true);
 
+        // re-assign for re-indexation
+        $this->species = new ArrayCollection($this->species->toArray());
+
         // Since the creation of new child is based on top fitness species,
         // it does not contains as much population as the maximum defined.
         // Therefor we create a new child from a random specie until the max population is reached
         while ($this->species->count() > 0 && ($children->count() + $this->species->count() > 0) && ($children->count() + $this->species->count()) < self::POPULATION) {
-            $specie = $this->species->offsetGet(random_int(1, $this->species->count())-1);
+            $offsetRandom = random_int(0, $this->species->count()-1);
+            $specie = $this->species->offsetGet($this->species->getKeys()[$offsetRandom]);
             $children->add($this->breedChild($specie));
         }
 
@@ -408,12 +422,13 @@ class Pool
      * If we passed the number of species available, create a new generation.
      *
      * @throws ORMInvalidArgumentException
+     * @throws OptimisticLockException
      */
     public function nextGenome(): void
     {
         $this->currentGenome++;
 
-        if ($this->currentGenome > $this->species->offsetGet($this->currentSpecies)->getGenomes()->count()-1) {
+        if ($this->currentGenome > $this->species->offsetGet($this->species->getKeys()[$this->currentSpecies])->getGenomes()->count()-1) {
             $this->currentGenome = 0;
             $this->currentSpecies++;
             if ($this->currentSpecies > $this->species->count()-1) {
@@ -462,9 +477,10 @@ class Pool
     }
 
     /**
-     * Remove all species not having enough fitness for the pool previous maxfitness
+     * Remove all species not having enough fitness for the pool previous max fitness
      *
      * @throws ORMInvalidArgumentException
+     * @throws OptimisticLockException
      */
     public function removeStaleSpecies(): void
     {
@@ -482,31 +498,39 @@ class Pool
                 }
             );
 
+            $sorted = new ArrayCollection($iterator->getArrayCopy());
+
             // if the highest fitness is higher than specie fitness, replace it
-            if ($iterator->offsetGet(0)->getFitness() > $specie->getTopFitness()) {
-                $specie->setTopFitness($iterator->offsetGet(0)->getFitness());
+            if ($sorted->offsetGet($sorted->getKeys()[0])->getFitness() > $specie->getTopFitness()) {
+                $specie->setTopFitness($sorted->offsetGet($sorted->getKeys()[0])->getFitness());
                 $specie->setStaleness(0);
             } else {
                 $specie->staleness++;
             }
 
-            // if the staleness is under the max or if the top fitness of the species overpasses the pool max fitness, then keep it.
+            // if the staleness is above the max granted
+            // or if the top fitness of the species is under the pool max fitness, then discard it.
             if ($specie->getStaleness() >= self::STALE_SPECIES ||
                 $specie->getTopFitness() < $this->getMaxFitness()
             ) {
-                $this->species->removeElement($specie);
-                $specie->setPool(null);
-                $this->em->remove($specie);
+                $this->removeSpecie($specie);
             }
         }
 
-        $this->setSpecies(new ArrayCollection($this->species->getValues()));
+        $this->species = $this->species->filter(
+            function($specie) {
+                return $specie instanceof Specie;
+            }
+        );
+
+        $this->em->flush();
     }
 
     /**
      * Remove all species having a fitness lower than the average
      *
      * @throws ORMInvalidArgumentException
+     * @throws OptimisticLockException
      */
     public function removeWeakSpecies(): void
     {
@@ -516,13 +540,17 @@ class Pool
         foreach ($this->species as $specie) {
             $breed = floor($specie->getAverageFitness() / $sum * self::POPULATION);
             if ($breed < 1) {
-                $this->species->removeElement($specie);
-                $specie->setPool(null);
-                $this->em->remove($specie);
+                $this->removeSpecie($specie);
             }
         }
 
-        $this->setSpecies(new ArrayCollection($this->species->getValues()));
+        $this->species = $this->species->filter(
+            function($specie) {
+                return $specie instanceof Specie;
+            }
+        );
+
+        $this->em->flush();
     }
 
     /**

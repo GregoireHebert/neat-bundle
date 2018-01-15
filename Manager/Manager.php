@@ -107,9 +107,9 @@ class Manager
     {
         /** @var Specie $specie */
         /* @var Genome $genome */
-        $specie = $this->pool->getSpecies()->offsetGet($this->pool->getCurrentSpecies());
-
-        $genome = $specie->getGenomes()->offsetGet($this->pool->getCurrentGenome());
+        $species = $this->pool->getSpecies();
+        $specie = $species->offsetGet($species->getKeys()[$this->pool->getCurrentSpecies()]);
+        $genome = $specie->getGenomes()->offsetGet($specie->getGenomes()->getKeys()[$this->pool->getCurrentGenome()]);
 
         Network::generateNetwork($genome, $this->outputsAggregator, $this->inputsAggregator, $this->em);
 
@@ -123,12 +123,13 @@ class Manager
     {
         /** @var Specie $specie */
         /* @var Genome $genome */
-        $specie = $this->pool->getSpecies()->offsetGet($this->pool->getCurrentSpecies());
+        $species = $this->pool->getSpecies();
+        $specie = $species->offsetGet($species->getKeys()[$this->pool->getCurrentSpecies()]);
         if (!$specie instanceof Specie) {
             return ;
         }
 
-        $genome = $specie->getGenomes()->offsetGet($this->pool->getCurrentGenome());
+        $genome = $specie->getGenomes()->offsetGet($specie->getGenomes()->getKeys()[$this->pool->getCurrentGenome()]);
         if (!$specie instanceof Specie) {
             return ;
         }
@@ -161,14 +162,15 @@ class Manager
      */
     public function evaluateBest(): void
     {
-        $genome = $this->pool->getBestGenome();
+        $pool = $this->pool;
+        $genome = $pool->getBestGenome();
 
         $inputs  = $this->inputsAggregator->aggregate->toArray();
         $outputs = Network::evaluate($genome, $inputs, $this->outputsAggregator, $this->inputsAggregator);
 
         foreach ($outputs as $output) {
             /** @var AbstractOutput $output */
-            $this->pusher->push(['outputName' => $output->getName()], 'output_application', ['username' => 'user1']);
+            $this->pusher->push($output->getName(), 'output_application');
         }
 
         $this->applyOutputs($outputs);
@@ -182,14 +184,15 @@ class Manager
     public function fitnessAlreadyMeasured(): bool
     {
         /** @var Specie $specie */
-        $specie = $this->pool->getSpecies()->offsetGet($this->pool->getCurrentSpecies());
+        $species = $this->pool->getSpecies();
+        $specie = $species->offsetGet($species->getKeys()[$this->pool->getCurrentSpecies()]);
         if (!$specie instanceof Specie) {
             return false;
         }
 
         /** @var Genome $genome */
-        $genome = $specie->getGenomes()->offsetGet($this->pool->getCurrentGenome());
-        if (!$genome instanceof Genome) {
+        $genome = $specie->getGenomes()->offsetGet($specie->getGenomes()->getKeys()[$this->pool->getCurrentGenome()]);
+        if (!$specie instanceof Specie) {
             return false;
         }
 

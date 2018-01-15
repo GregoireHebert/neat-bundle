@@ -37,7 +37,9 @@ class Neuron
      */
     public function addIncoming(Gene $gene): void
     {
-        $this->incoming->add($gene);
+        if (!$this->incoming->contains($gene)) {
+            $this->incoming->add($gene);
+        }
     }
 
     /**

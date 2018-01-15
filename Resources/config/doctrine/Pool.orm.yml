@@ -20,6 +20,6 @@ Gheb\NeatBundle\Neat\Pool:
   oneToMany:
     species:
       targetEntity: 'Gheb\NeatBundle\Neat\Specie'
-      cascade: ['persist', 'remove', 'refresh']
+      cascade: ['persist']
       orphanRemoval: true
       mappedBy: pool
