@@ -174,10 +174,11 @@ class Pool
      *
      * @param bool $cutToOne
      *
-     * @throws OptimisticLockException
      */
     public function cullSpecies($cutToOne = false): void
     {
+        $removedGenomes = [];
+
         /** @var Specie $specie */
         foreach ($this->species as $specie) {
             $iterator = $specie->getGenomes()->getIterator();
@@ -197,6 +198,7 @@ class Pool
             foreach ($iterator as $genome) {
                 if (--$remaining>0) {
                     $specie->removeGenome($genome);
+                    $removedGenomes[] = $genome;
                     continue;
                 }
 
@@ -205,6 +207,11 @@ class Pool
         }
 
         $this->em->flush();
+
+        foreach ($removedGenomes as $removedGenome) {
+            $this->em->detach($removedGenome);
+        }
+        unset($removedGenomes);
     }
 
     /**
@@ -484,6 +491,8 @@ class Pool
      */
     public function removeStaleSpecies(): void
     {
+        $removedSpecies = [];
+
         /**
          * @var int
          * @var Specie $specie
@@ -514,6 +523,7 @@ class Pool
                 $specie->getTopFitness() < $this->getMaxFitness()
             ) {
                 $this->removeSpecie($specie);
+                $removedSpecies[] = $specie;
             }
         }
 
@@ -524,6 +534,11 @@ class Pool
         );
 
         $this->em->flush();
+
+        foreach ($removedSpecies as $removedSpecy) {
+            $this->em->detach($removedSpecy);
+        }
+        unset($removedSpecies);
     }
 
     /**
@@ -534,6 +549,7 @@ class Pool
      */
     public function removeWeakSpecies(): void
     {
+        $removedSpecies = [];
         $sum = $this->totalAverageFitness();
 
         /** @var Specie $specie */
@@ -541,6 +557,7 @@ class Pool
             $breed = floor($specie->getAverageFitness() / $sum * self::POPULATION);
             if ($breed < 1) {
                 $this->removeSpecie($specie);
+                $removedSpecies[] = $specie;
             }
         }
 
@@ -551,6 +568,11 @@ class Pool
         );
 
         $this->em->flush();
+
+        foreach ($removedSpecies as $removedSpecy) {
+            $this->em->detach($removedSpecy);
+        }
+        unset($removedSpecies);
     }
 
     /**
