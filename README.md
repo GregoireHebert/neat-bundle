@@ -18,9 +18,9 @@ $ composer install gheb/neat-bundle
 ## Inputs & Outputs
 
 In such a system, values of inputs are computed to tend toward one or more outputs.
-To do so, and keep it isolated, gheb/neat-bundle come with gheb/io-bundle.
+To do so, and keep it isolated, `gheb/neat-bundle` comes with `gheb/io-bundle`.
 
-First define your inputs :
+First define your inputs:
 
 ```php
 <?php
@@ -45,21 +45,21 @@ class MyInput extends AbstractInput
 }
 ```
 
-And register it as a service with the tag gheb.io.input
+And register it as a service with the tag `gheb.io.input`:
 
 ```yaml
 parameters:
-	acme.io.input.myinput.class : Acme\DemoBundle\IO\Inputs\MyInput
+        acme.io.input.myinput.class : Acme\DemoBundle\IO\Inputs\MyInput
 services:
-	acme.io.input.myinput:
-    	class : '%acme.io.input.myinput.class%'
-	    tags:
-	      - { name: gheb.io.input }
+        acme.io.input.myinput:
+        class : '%acme.io.input.myinput.class%'
+            tags:
+              - { name: gheb.io.input }
 ```
 
-Same way for the outputs :
+Same way for the outputs:
 
-First define your inputs :
+First define your inputs:
 
 ```php
 <?php
@@ -84,22 +84,21 @@ class MyOutput extends AbstractInput
 }
 ```
 
-And register it as a service with the tag gheb.io.output
+And register it as a service with the tag `gheb.io.output`:
 
 ```yaml
 parameters:
-	acme.io.input.myoutput.class : Acme\DemoBundle\IO\Inputs\MyOutput
+        acme.io.input.myoutput.class : Acme\DemoBundle\IO\Inputs\MyOutput
 services:
-	acme.io.input.myoutput:
-    	class : '%acme.io.input.myoutput.class%'
-	    tags:
-	      - { name: gheb.io.output}
-
+        acme.io.input.myoutput:
+        class : '%acme.io.input.myoutput.class%'
+            tags:
+              - { name: gheb.io.output}
 ```
 
 ## Hooks
 
-Maybe Hooks is not the right term here, because in my minds, you don't always need to use hooks.
+Maybe hooks is not the right term here, because in my minds, you don't always need to use hooks.
 In our case, hooks may be essential.
 
 when you run the neat command (php bin/console gheb:neat:run) to evaluate over and over the network created, there is a two things you **MUST** define :
@@ -149,7 +148,7 @@ The different tags / hooks are :
 * **`gheb.neat.hook.getFitness`** _only one hook can and **must** be defined, if multiple, they just overwrite the previous ones, it must return an integer. The GA will keep and mutate the genomes having the higher fitness._
 * **`gheb.neat.hook.nextGenomeCriteria`** _only one hook can and **must** be defined, if multiple, they just overwrite the previous ones, it must return a boolean. This criteria is the condition that indicate the end of the current genome evaluation, and then just switch to the next genome/specie/generation._
 
-Just to get a more precise idea of what's going on, when you run the command gheb:neat:run, here is a pseudo-code :
+Just to get a more precise idea of what's going on, when you run the command `gheb:neat:run`, here is a pseudo-code:
 
 ```
 hook.onBeforeInit()
@@ -179,7 +178,7 @@ endwhile
 
 ```
 I clearly see other places to put new hooks like just after the while loop with a onBeforeEnding hook.
-But i do not have the use for the moment. I will add them later, or please feel free to fork the project and do a Merge Request.
+But I do not have the use at the moment. I will add them later, or please feel free open a pull request.
 
 ## TODO
 
