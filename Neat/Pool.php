@@ -16,7 +16,7 @@ class Pool
 {
     public const CROSSOVER_CHANCE = 0.75;
     public const STALE_SPECIES    = 15;
-    public const POPULATION       = 300;
+    public const POPULATION       = 50;
     public const DELTA_DISJOINT   = 2.0;
     public const DELTA_WEIGHT     = 0.4;
     public const DELTA_THRESHOLD  = 1.0;

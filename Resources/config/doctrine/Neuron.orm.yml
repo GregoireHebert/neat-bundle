@@ -10,8 +10,10 @@ Gheb\NeatBundle\Neat\Neuron:
       type: integer
     value:
       type: decimal
-      precision: 8
-      scale: 2
+      precision: 65
+      scale: 9
+    activationFunction:
+      type: string
 
   manyToMany:
     incoming:

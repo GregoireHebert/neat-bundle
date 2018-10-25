@@ -27,6 +27,11 @@ class Neuron
      */
     public $value = 0.0;
 
+    /**
+     * @var string
+     */
+    public $activationFunction;
+
     public function __construct()
     {
         $this->incoming = new ArrayCollection();
@@ -104,5 +109,21 @@ class Neuron
     public function setValue(float $value): void
     {
         $this->value = $value;
+    }
+
+    /**
+     * @return string
+     */
+    public function getActivationFunction(): string
+    {
+        return $this->activationFunction;
+    }
+
+    /**
+     * @param string $activationFunction
+     */
+    public function setActivationFunction(string $activationFunction): void
+    {
+        $this->activationFunction = $activationFunction;
     }
 }

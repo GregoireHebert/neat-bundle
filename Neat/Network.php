@@ -10,6 +10,12 @@ use Gheb\IOBundle\Aggregator\Aggregator ;
 class Network
 {
     public const MAX_NODES = 1000000;
+    public const ACTIVATION_FUNCTIONS = ['sigmoid', 'reLU', 'sin', 'cos', 'tanh', 'gaussian'];
+
+    public function getRandomActivationFunction()
+    {
+        return array_rand(self::ACTIVATION_FUNCTIONS);
+    }
 
     /**
      * Receive inputs and evaluate them in function of their values
@@ -31,7 +37,7 @@ class Network
 
         $inputCount = $inputsAggregator->count();
         for ($i = 0; $i < $inputCount; $i++) {
-            $genome->getNeuron($i)->setValue($inputs[$i]->getValue());
+            $genome->getNeuron($i)->setValue(self::normalize($inputs[$i]->getValue()));
         }
 
         /** @var Neuron $neuron */
@@ -39,20 +45,20 @@ class Network
             $sum = 0;
             /** @var Gene $incoming */
             foreach ($neuron->getIncoming() as $incoming) {
-                /** @var Neuron $other */
-                $other = $genome->getNeuron($incoming->getInto());
-                $sum += $incoming->getWeight() * $other->getValue();
+                /** @var Neuron $into */
+                $into = $genome->getNeuron($incoming->getInto());
+                $sum += $incoming->getWeight() * $into->getValue();
             }
 
             if ($neuron->getIncoming()->count() > 0) {
-                $neuron->setValue(self::sigmoid($sum));
+                $neuron->setValue(self::{$neuron->getActivationFunction()}($sum));
             }
         }
 
         $triggeredOutputs = [];
         $outputCount = $outputsAggregator->count();
         for ($j = 0; $j < $outputCount; $j++) {
-            if ($genome->getNeuron(self::MAX_NODES + $j)->getValue() > 0) {
+            if (self::sigmoid($genome->getNeuron(self::MAX_NODES + $j)->getValue()) > 0.5) {
                 $triggeredOutputs[] = $outputsAggregator->aggregate->offsetGet($j);
             }
         }
@@ -69,12 +75,14 @@ class Network
      * @param EntityManager $em
      *
      * @throws OptimisticLockException
+     * @throws \Doctrine\ORM\ORMException
      */
     public static function generateNetwork(Genome $genome, Aggregator  $outputsAggregator, Aggregator  $inputsAggregator, EntityManager $em)
     {
         $inputCount = $inputsAggregator->count();
         for ($i = 0; $i < $inputCount; $i++) {
             $neuron = new Neuron();
+            $neuron->setActivationFunction(self::getRandomActivationFunction());
             $neuron->setPosition($i);
             $genome->addNeuron($neuron);
         }
@@ -82,6 +90,7 @@ class Network
         $outputCount = $outputsAggregator->count();
         for ($j = 0; $j < $outputCount; $j++) {
             $neuron = new Neuron();
+            $neuron->setActivationFunction(self::getRandomActivationFunction());
             $neuron->setPosition(self::MAX_NODES + $j);
             $genome->addNeuron($neuron);
         }
@@ -102,6 +111,7 @@ class Network
             if ($gene->isEnabled()) {
                 if (!$genome->getNeuron($gene->getOut()) instanceof Neuron) {
                     $neuron = new Neuron();
+                    $neuron->setActivationFunction(self::getRandomActivationFunction());
                     $neuron->setPosition($gene->getOut());
                     $genome->addNeuron($neuron);
                 }
@@ -112,6 +122,7 @@ class Network
 
                 if (!$genome->getNeuron($gene->getInto()) instanceof Neuron) {
                     $neuron = new Neuron();
+                    $neuron->setActivationFunction(self::getRandomActivationFunction());
                     $neuron->setPosition($gene->getInto());
                     $genome->addNeuron($neuron);
                 }
@@ -123,14 +134,51 @@ class Network
     }
 
     /**
-     * return sigmoidal result
+     * Sigmoid function, return a value between 0 and 1.
      *
-     * @param $x
+     * @param int $x
      *
      * @return float
      */
     public static function sigmoid($x): float
     {
-        return 2/(1+exp(-4.9*$x))-1;
+        return  1 / (1 + exp(-$x));
+    }
+
+    /**
+     * reLU function returns 0 if $x is < 0, otherwise returns x.
+     *
+     * @param $x
+     *
+     * @return float|int
+     */
+    public static function reLU($x)
+    {
+        return max(0, $x);
+    }
+
+    public static function sin($x): float
+    {
+        return \sin($x);
+    }
+
+    public static function cos($x): float
+    {
+        return \cos($x);
+    }
+
+    public static function tanh($x): float
+    {
+        return \tanh($x);
+    }
+
+    public static function gaussian($x): float
+    {
+        return \exp(-pow($x, 2));
+    }
+
+    public static function normalize($x): float
+    {
+        return $x/10;
     }
 }

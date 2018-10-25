@@ -9,7 +9,7 @@ use Gheb\IOBundle\Aggregator\Aggregator ;
 
 class Mutation
 {
-    public const PERTURB_CHANCE = 0.90;
+    private const PERTURB_CHANCE = 0.90;
 
     /**
      * @var EntityManager
@@ -221,6 +221,20 @@ class Mutation
         $genome->addGene($newLink);
     }
 
+    private function pointMutate(Genome $genome)
+    {
+        $step = $genome->mutationRates['step'];
+
+        foreach ($genome->getGenes() as $gene) {
+            if (lcg_value() < self::PERTURB_CHANCE) {
+                /** @var Gene $gene */
+                $gene->setWeight($gene->getWeight() + lcg_value() * $step * 2 - $step);
+            } else {
+                $gene->setWeight(lcg_value()*4-2);
+            }
+        }
+    }
+
     /**
      * Applies a mutation upon a genome
      *
@@ -239,6 +253,10 @@ class Mutation
             } else {
                 $genome->mutationRates[$mutation] = 1.05263*$rate;
             }
+        }
+
+        if (lcg_value() < $genome->mutationRates['connections']) {
+            $this->pointMutate($genome);
         }
 
         // has a chance to create a new link in between 2 input and output nodes
