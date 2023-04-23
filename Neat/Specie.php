@@ -2,54 +2,26 @@
 
 namespace Gheb\NeatBundle\Neat;
 
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
-
-/**
- * Class Species
- *
- * @author  Grégoire Hébert <gregoire@opo.fr>
- */
 class Specie
 {
-    /**
-     * @var int
-     */
-    public $averageFitness = 0;
+    public int $averageFitness = 0;
 
     /**
-     * @var ArrayCollection
+     * @var array<Genome>
      */
-    public $genomes;
+    public array $genomes = [];
 
-    /**
-     * @var int
-     */
-    public $id;
+    public int $id;
 
-    /**
-     * @var Pool
-     */
-    public $pool;
+    public ?Pool $pool;
 
-    /**
-     * @var int
-     */
-    public $staleness = 0;
+    public int $staleness = 0;
 
-    /**
-     * @var int
-     */
-    public $topFitness = 0;
-
-    public function __construct()
-    {
-        $this->genomes = new ArrayCollection();
-    }
+    public int $topFitness = 0;
 
     public function addGenome(Genome $genome): void
     {
-        $this->genomes->add($genome);
+        $this->genomes[] = $genome;
         $genome->setSpecie($this);
     }
 
@@ -59,126 +31,96 @@ class Specie
     public function calculateAverageFitness(): void
     {
         $total = 0;
-        /** @var Genome $genome */
         foreach ($this->genomes as $genome) {
             $total += $genome->getGlobalRank();
         }
 
-        $this->setAverageFitness($total / $this->genomes->count());
+        $this->setAverageFitness($total / count($this->genomes));
     }
 
-    /**
-     * @return int
-     */
     public function getAverageFitness(): int
     {
         return $this->averageFitness;
     }
 
-    /**
-     * @return ArrayCollection
-     */
-    public function getGenomes(): Collection
+    public function getGenomes(): array
     {
         return $this->genomes;
     }
 
-    /**
-     * @return Genome|null
-     */
-    public function getBestGenome():? Genome
+    public function getBestGenome(): ?Genome
     {
         /** var Genome $genome */
-        return $this->getGenomes()->filter(function(Genome $genome){
-            return $genome->getFitness() === $this->getTopFitness();
-        })->first();
+       foreach ($this->getGenomes() as $genome) {
+           if ($genome->getFitness() === $this->getTopFitness()) {
+               return $genome;
+           }
+       }
+
+       return null;
     }
 
-    /**
-     * @return int
-     */
     public function getId(): int
     {
         return $this->id;
     }
 
-    /**
-     * @return Pool
-     */
     public function getPool(): Pool
     {
         return $this->pool;
     }
 
-    /**
-     * @return int
-     */
     public function getStaleness(): int
     {
         return $this->staleness;
     }
 
-    /**
-     * @return int
-     */
     public function getTopFitness(): int
     {
         return $this->topFitness;
     }
 
-    /**
-     * @param Genome $genome
-     */
-    public function removeGenome(Genome $genome): void
+    public function removeGenome(Genome $genomeToRemove): void
     {
-        $genome->setSpecie(null);
-        $this->genomes->removeElement($genome);
+        $genomeToRemove->setSpecie(null);
+
+        foreach ($this->genomes as $key => $genome) {
+            if ($genome === $genomeToRemove) {
+                unset($this->genomes[$key]);
+                return;
+            }
+        }
     }
 
-    /**
-     * @param int $averageFitness
-     */
-    public function setAverageFitness($averageFitness): void
+    public function setAverageFitness(int $averageFitness): void
     {
         $this->averageFitness = $averageFitness;
     }
 
     /**
-     * @param ArrayCollection $genomes
+     * @param array<Genome> $genomes
      */
-    public function setGenomes($genomes): void
+    public function setGenomes(array $genomes): void
     {
         $this->genomes = $genomes;
     }
 
-    /**
-     * @param int $id
-     */
-    public function setId($id): void
+    public function setId(int $id): void
     {
         $this->id = $id;
     }
 
-    /**
-     * @param Pool $pool
-     */
-    public function setPool($pool): void
+    public function setPool(?Pool $pool): void
     {
         $this->pool = $pool;
     }
 
-    /**
-     * @param int $staleness
-     */
-    public function setStaleness($staleness): void
+    public function setStaleness(int $staleness): void
     {
         $this->staleness = $staleness;
     }
 
-    /**
-     * @param int $topFitness
-     */
-    public function setTopFitness($topFitness): void
+    public function setTopFitness(int $topFitness): void
     {
         $this->topFitness = $topFitness;
     }

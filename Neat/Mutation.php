@@ -2,99 +2,50 @@
 
 namespace Gheb\NeatBundle\Neat;
 
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\ORMInvalidArgumentException;
 use Gheb\IOBundle\Aggregator\Aggregator ;
 
 class Mutation
 {
     private const PERTURB_CHANCE = 0.90;
 
-    /**
-     * @var EntityManager
-     */
-    private $em;
-    /**
-     * @var Pool
-     */
-    private $pool;
-    /**
-     * @var Aggregator
-     */
-    private $inputsAggregator;
-    /**
-     * @var Aggregator
-     */
-    private $outputsAggregator;
+    private ?Pool $pool = null;
 
-    /**
-     * Manager constructor.
-     *
-     * @param EntityManager     $em
-     * @param Aggregator   $inputsAggregator
-     * @param Aggregator  $outputsAggregator
-     */
-    public function __construct(EntityManager $em, Aggregator  $inputsAggregator, Aggregator  $outputsAggregator)
+    private Aggregator $inputsAggregator;
+
+    private Aggregator $outputsAggregator;
+
+    public function __construct(Aggregator  $inputsAggregator, Aggregator  $outputsAggregator)
     {
-        $this->em                = $em;
         $this->inputsAggregator  = $inputsAggregator;
         $this->outputsAggregator = $outputsAggregator;
     }
 
     /**
-     * Clone an entity and persist it
-     *
-     * @param $entity
-     *
-     * @throws ORMInvalidArgumentException
-     *
-     * @return mixed
-     */
-    public function cloneEntity($entity)
-    {
-        $clone = clone $entity;
-        $this->em->detach($clone);
-
-        return $clone;
-    }
-
-    /**
      * Create a new genome based on two genomes
-     *
-     * @param Genome $g1
-     * @param Genome $g2
-     *
-     * @throws ORMInvalidArgumentException
-     *
-     * @return Genome
      */
     public function crossOver(Genome $g1, Genome $g2): Genome
     {
         if ($g2->getFitness() > $g1->getFitness()) {
-            $temp = $g1;
-            $g1   = $g2;
-            $g2   = $temp;
+            return $this->crossOver($g2, $g1);
         }
 
+        /** @var array<Gene> $newInnovation */
+        $newInnovation = [];
         $child = new Genome();
 
-        $newInnovation = [];
-        /** @var Gene $gene */
         foreach ($g2->getGenes() as $gene) {
             $newInnovation[$gene->getInnovation()] = $gene;
         }
 
-        // add to the genome each gene contained in the first genome.
+        // Add to the new genome each gene contained in the first genome.
         // If the second genome has also an enabled gene for the same innovation number,
         // the gene added is randomly chosen between the two.
         foreach ($g1->getGenes() as $gene) {
-            /** @var Gene $gene2 */
             $gene2 = $newInnovation[$gene->getInnovation()] ?? null;
-            if (null !== $gene2 && random_int(1, 2) === 1 && true === $gene2->isEnabled()) {
-                $child->addGene($this->cloneEntity($gene2));
+            if (null !== $gene2 && lcg_value() < .5 && $gene2->isEnabled()) {
+                $child->addGene(clone $gene2);
             } else {
-                $child->addGene($this->cloneEntity($gene));
+                $child->addGene(clone $gene);
             }
         }
 
@@ -106,46 +57,29 @@ class Mutation
 
     /**
      * Reverse enable state of a random gene
-     *
-     * @param Genome $genome
-     * @param bool   $enabled // changes enabled ones to disabled when true, and changes disabled ones to enabled when false
+     * @param bool $enabled // changes enabled ones to disabled when true, and changes disabled ones to enabled when false
      */
-    public function enableDisableMutate(Genome $genome, $enabled = true): void
+    public function enableDisableMutate(Genome $genome, bool $enabled = true): void
     {
-        if ($genome->getGenes()->count() === 0) {
+        $candidates = array_filter($genome->getGenes(), static fn (Gene $gene) => $gene->isEnabled() !== $enabled);
+
+        if (count($candidates) === 0) {
             return;
         }
 
-        $candidates = new ArrayCollection();
-
-        /** @var Gene $gene */
-        foreach ($genome->getGenes() as $gene) {
-            if ($gene->isEnabled() !== $enabled) {
-                $candidates->add($gene);
-            }
-        }
-
-        if ($candidates->count() === 0) {
-            return;
-        }
-
-        $gene = $candidates->get(random_int(1, $candidates->count())-1);
+        $gene = $candidates[array_rand($candidates)];
         $gene->setEnabled(!$gene->isEnabled());
     }
 
     /**
-     * Return a random neuron. A neuron can be an input, an output or an hidden node
-     *
-     * @param      $genes
-     * @param bool $nonInput
-     *
-     * @return mixed
+     * Return a random neuron. A neuron can be an input, an output or a hidden node
      */
-    public function getRandomNeuron($genes, $nonInput = false)
+    public function getRandomNeuron(array $genes, bool $ignoreInput = false): int
     {
         $neurons = [];
-        if (!$nonInput) {
-            $inputsCount = $this->inputsAggregator->count();
+        $inputsCount = $this->inputsAggregator->count();
+
+        if (!$ignoreInput) {
             for ($i = 0; $i < $inputsCount; $i++) {
                 $neurons[$i] = $i;
             }
@@ -156,46 +90,32 @@ class Mutation
             $neurons[Network::MAX_NODES+$j] = Network::MAX_NODES+$j;
         }
 
-        /** @var Gene $gene */
         foreach ($genes as $gene) {
-            if (!$nonInput || $gene->getInto() > $this->inputsAggregator->count()) {
+            if (!$ignoreInput || $gene->getInto() > $inputsCount) {
                 $neurons[$gene->getInto()] = $gene->getInto();
             }
 
-            if (!$nonInput || $gene->getOut() > $this->inputsAggregator->count()) {
+            if (!$ignoreInput || $gene->getOut() > $inputsCount) {
                 $neurons[$gene->getOut()] = $gene->getOut();
             }
         }
 
-        $r = random_int(1, \count($neurons)) -1;
-        $n = array_values($neurons);
-
-        return $n[$r];
+        return $neurons[array_rand($neurons)];
     }
 
     /**
      * Has a chance to create a new gene in between two random in and out genes
      * or a chance to create a new link from a bias to the output
-     *
-     * @param Genome $genome
-     * @param        $forceBias
      */
-    public function linkMutate(Genome $genome, $forceBias): void
+    public function linkMutate(Genome $genome, bool $forceBias): void
     {
         $rn1 = $this->getRandomNeuron($genome->getGenes());
         $rn2 = $this->getRandomNeuron($genome->getGenes(), true);
 
-        // both are inputs, nothing to do
-        $count = $this->inputsAggregator->count();
-        if ($count > $rn1 && $count > $rn2) {
-            return ;
-        }
-
-        // set as rn1 is an input and rn2 a nonInput
-        if ($count > $rn2) {
-            $tmp = $rn1;
-            $rn1 = $rn2;
-            $rn2 = $tmp;
+        // if they are inputs only, nothing to do
+        $inputPositionMax = $this->inputsAggregator->count();
+        if ($inputPositionMax > $rn1 && $inputPositionMax > $rn2) {
+            return;
         }
 
         $newLink = new Gene();
@@ -203,25 +123,30 @@ class Mutation
         $newLink->setOut($rn2);
 
         if ($forceBias) {
-            $newLink->setInto($this->inputsAggregator->count());
+            $newLink->setInto($inputPositionMax);
         }
 
-        $exists = $genome->getGenes()->filter(function (Gene $gene) use ($newLink) {
-            return $gene->getInto() === $newLink->getInto() && $gene->getOut() === $newLink->getOut();
-        });
+        $thisNewLinkExistAlready = 0 < count(array_filter(
+            $genome->getGenes(),
+            static fn (Gene $gene) => $gene->getInto() === $newLink->getInto() && $gene->getOut() === $newLink->getOut()
+        ));
 
-        if ($exists->count() > 0) {
+        if ($thisNewLinkExistAlready) {
+            // too bad, no variation this time
             return;
         }
 
-        $pool = $this->pool instanceof Pool ? $this->pool : $genome->getSpecie()->getPool();
-        $newLink->setInnovation($pool->newInnovation());
+        if (!$this->pool instanceof Pool) {
+            throw new \LogicException('Expected Pool, none found');
+        }
+
+        $newLink->setInnovation($this->pool->newInnovation());
         $newLink->setWeight(lcg_value()*4-2);
 
         $genome->addGene($newLink);
     }
 
-    private function pointMutate(Genome $genome)
+    private function pointMutate(Genome $genome): void
     {
         $step = $genome->mutationRates['step'];
 
@@ -239,16 +164,16 @@ class Mutation
      * Applies a mutation upon a genome
      *
      * @param Genome $genome
-     * @param Pool   $pool   pool to innovate, when the genome hasn't been attached to it yet
+     * @param ?Pool $pool   pool to innovate, when the genome hasn't been attached to it yet
      */
-    public function mutate(Genome $genome, $pool = null): void
+    public function mutate(Genome $genome, ?Pool $pool = null): void
     {
         $this->pool = $pool;
         $rates      = $genome->mutationRates;
 
         // has a chance to reduce the mutation rate or rise it up
-        foreach ($rates as $mutation=>$rate) {
-            if (random_int(1, 2) === 1) {
+        foreach ($rates as $mutation => $rate) {
+            if (lcg_value() < .5) {
                 $genome->mutationRates[$mutation] = 0.95*$rate;
             } else {
                 $genome->mutationRates[$mutation] = 1.05263*$rate;
@@ -306,27 +231,26 @@ class Mutation
     }
 
     /**
-     * Adds a new node in between two existing nodes and disable the initial node in order to
+     * Adds a new node in between two existing nodes and disable the initial link in order to
      * get from A--C to A--B--C making the weight between A and B to 1.0
      * This new node is here to break the linearity in the network and expand the structure that will may evolve for speciation later.
-     *
-     * @param Genome $genome
      */
     public function nodeMutate(Genome $genome): void
     {
-        if (0 === $genome->getGenes()->count()) {
+        if (0 === count($genome->getGenes())) {
+            // weirdly nothing to mutate here
+            trigger_error('no genes to mutate for genome', E_USER_NOTICE);
             return;
         }
 
-        /** @var Gene $gene */
-        $gene = $genome->getGenes()->get(random_int(1, $genome->getGenes()->count())-1);
+        $gene = $genome->getGenes()[array_rand($genome->getGenes())];
         if ($gene->isEnabled() === false) {
             return;
         }
 
         $gene->setEnabled(false);
 
-        $pool  = $this->pool instanceof Pool ? $this->pool : $gene->getGenome()->getSpecie()->getPool();
+        $pool  = $this->pool ?? $gene->getGenome()->getSpecie()->getPool();
         $clone = clone $gene;
 
         $clone->setOut($genome->getMaxNeuron());

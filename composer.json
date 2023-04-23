@@ -24,13 +24,10 @@
     },
 
     "require": {
-        "php": ">=5.5.9",
-        "symfony/symfony": "3.*",
-        "doctrine/orm": "^2.5",
-        "doctrine/doctrine-bundle": "^1.6",
-        "doctrine/doctrine-cache-bundle": "^1.2",
+        "php": ">=8.2",
         "gheb/io-bundle": "master",
-        "gos/web-socket-bundle": "^1.8"
+        "gos/web-socket-bundle": "^3.0",
+        "symfony/messenger": "^6.2"
     },
 
     "minimum-stability": "dev",

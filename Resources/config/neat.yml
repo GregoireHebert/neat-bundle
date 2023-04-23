@@ -11,7 +11,7 @@ services:
 
   gheb.neat.evaluate.command:
     class: %gheb.neat.evaluate.command.class%
-    arguments: ["@gheb.io.aggregator.inputs", "@gheb.io.aggregator.outputs", "@doctrine.orm.entity_manager", "@gheb.neat.mutation", "@gos_web_socket.wamp.pusher"]
+    arguments: ["@gheb.io.aggregator.inputs", "@gheb.io.aggregator.outputs", "@doctrine.orm.entity_manager", "@gheb.neat.mutation"]
     tags:
       - { name: console.command }
 

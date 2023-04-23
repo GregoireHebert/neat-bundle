@@ -2,126 +2,72 @@
 
 namespace Gheb\NeatBundle\Neat;
 
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
-
 class Neuron
 {
-    /**
-     * @var int
-     */
-    public $id;
+    public int $id;
 
-    /**
-     * @var ArrayCollection
-     */
-    public $incoming;
+    /** @var array<Gene>  */
+    public array $incoming = [];
 
-    /**
-     * @var int
-     */
-    public $position;
+    public int $position;
 
-    /**
-     * @var float
-     */
-    public $value = 0.0;
+    public float $value = 0.0;
 
-    /**
-     * @var string
-     */
-    public $activationFunction;
-
-    public function __construct()
-    {
-        $this->incoming = new ArrayCollection();
-    }
+    public string $activationFunction;
 
     /**
      * @param Gene $gene
      */
     public function addIncoming(Gene $gene): void
     {
-        if (!$this->incoming->contains($gene)) {
-            $this->incoming->add($gene);
-        }
+        $this->incoming[] = $gene;
     }
 
-    /**
-     * @return int
-     */
     public function getId(): int
     {
         return $this->id;
     }
 
-    /**
-     * @return ArrayCollection
-     */
-    public function getIncoming(): Collection
+    public function getIncoming(): array
     {
         return $this->incoming;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getPosition()
+    public function getPosition(): int
     {
         return $this->position;
     }
 
-    /**
-     * @return float
-     */
     public function getValue(): float
     {
         return $this->value;
     }
 
-    /**
-     * @param int $id
-     */
-    public function setId($id): void
+    public function setId(int $id): void
     {
         $this->id = $id;
     }
 
-    /**
-     * @param ArrayCollection $incoming
-     */
-    public function setIncoming($incoming): void
+    public function setIncoming(array $incoming): void
     {
         $this->incoming = $incoming;
     }
 
-    /**
-     * @param int $position
-     */
     public function setPosition(int $position): void
     {
         $this->position = $position;
     }
 
-    /**
-     * @param float $value
-     */
     public function setValue(float $value): void
     {
         $this->value = $value;
     }
 
-    /**
-     * @return string
-     */
     public function getActivationFunction(): string
     {
         return $this->activationFunction;
     }
 
-    /**
-     * @param string $activationFunction
-     */
     public function setActivationFunction(string $activationFunction): void
     {
         $this->activationFunction = $activationFunction;
