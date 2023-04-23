@@ -25,9 +25,7 @@
 
     "require": {
         "php": ">=8.2",
-        "gheb/io-bundle": "master",
-        "gos/web-socket-bundle": "^3.0",
-        "symfony/messenger": "^6.2"
+        "gheb/io-bundle": "master"
     },
 
     "minimum-stability": "dev",
